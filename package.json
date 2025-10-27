@@ -6,7 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "ts-node prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "deploy:dev": "./deploy.sh deploy development",
+    "deploy:prod": "./deploy.sh deploy production",
+    "deploy:docker": "./deploy.sh deploy docker",
+    "health": "./deploy.sh health",
+    "cleanup": "./deploy.sh cleanup"
   },
   "dependencies": {
     "@prisma/client": "^5.0.0",
@@ -26,12 +37,15 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
+    "@types/jest": "^29.5.0",
     "@types/multer": "^1.4.7",
     "@types/node": "^20.19.23",
     "@types/react": "^18.3.26",
     "@types/react-dom": "^18.3.7",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.5.6",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0",
     "prisma": "^5.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"

@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { uploadImage } from '@/lib/gridfs';
 
 const prisma = new PrismaClient();
@@ -43,10 +43,43 @@ async function main() {
 
     await prisma.room.createMany({
       data: [
-        { name: 'Room 101', type: 'Single', price: 100, description: 'Cozy single room', available: true, imageId },
-        { name: 'Room 102', type: 'Double', price: 150, description: 'Spacious double room', available: true, imageId },
+        { 
+          name: 'Room 101', 
+          type: 'Standard', 
+          price: 100, 
+          description: 'Cozy single room with modern amenities', 
+          imageId,
+          capacity: 1,
+          amenities: ['WiFi', 'AC', 'TV'],
+          bedType: 'Single',
+          size: '200 sq ft',
+          images: []
+        },
+        { 
+          name: 'Room 102', 
+          type: 'Deluxe', 
+          price: 150, 
+          description: 'Spacious double room with premium features', 
+          imageId,
+          capacity: 2,
+          amenities: ['WiFi', 'AC', 'TV', 'Mini Bar'],
+          bedType: 'Queen',
+          size: '300 sq ft',
+          images: []
+        },
+        { 
+          name: 'Room 103', 
+          type: 'Suite', 
+          price: 250, 
+          description: 'Luxury suite with separate living area', 
+          imageId,
+          capacity: 4,
+          amenities: ['WiFi', 'AC', 'TV', 'Mini Bar', 'Room Service', 'Balcony'],
+          bedType: 'King',
+          size: '500 sq ft',
+          images: []
+        },
       ],
-      skipDuplicates: true,
     });
 
     console.log('Database seeded successfully');
@@ -58,4 +91,4 @@ async function main() {
   }
 }
 
-main();
+await main();

@@ -34,18 +34,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    const room = await prisma.room.findUnique({ where: { id: roomId } });
+    if (!room) {
+      return NextResponse.json({ error: 'Room not found' }, { status: 404 });
+    }
+
+    // Calculate total price
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+    const totalPrice = room.price * nights;
+
     const booking = await prisma.booking.create({
       data: {
         roomId,
         userId,
         userName,
         userEmail: user.email,
-        checkIn: new Date(checkIn),
-        checkOut: new Date(checkOut),
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
+        totalPrice,
+        paymentId: session.payment_intent as string,
       },
     });
 
-    await prisma.room.update({ where: { id: roomId }, data: { available: false } });
+    // Don't set room as unavailable permanently - check availability dynamically
     return NextResponse.json(booking, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
