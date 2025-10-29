@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { PrismaClient } from '@prisma/client';
 import { verifyToken } from '@/lib/auth';
 
@@ -91,22 +92,30 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const repeatCustomers = await prisma.user.count({
+    // Get users with multiple bookings (repeat customers)
+    const usersWithBookings = await prisma.user.findMany({
       where: {
         bookings: {
           some: {
             createdAt: { gte: startDate },
           },
         },
+        isAdmin: false,
+      },
+      include: {
         _count: {
-          bookings: {
-            where: {
-              createdAt: { gte: startDate },
+          select: {
+            bookings: {
+              where: {
+                createdAt: { gte: startDate },
+              },
             },
           },
         },
       },
     });
+
+    const repeatCustomers = usersWithBookings.filter(user => user._count.bookings > 1).length;
 
     // Top Performing Rooms
     const topRooms = await prisma.room.findMany({

@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 interface Room {
   id: string;
@@ -38,7 +38,7 @@ interface User {
   isAdmin: boolean;
 }
 
-export default function RoomDetails({ params }: { readonly params: { id: string } }) {
+export default function RoomDetails() {
   const [room, setRoom] = useState<Room | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +57,7 @@ export default function RoomDetails({ params }: { readonly params: { id: string 
     specialRequests: '',
   });
   const router = useRouter();
+  const params = useParams() as { id: string };
 
   useEffect(() => {
     checkAuth();
@@ -300,6 +301,7 @@ export default function RoomDetails({ params }: { readonly params: { id: string 
                   height={400}
                   className="w-full h-96 object-cover" 
                 />
+                
               ) : (
                 <div className="w-full h-96 bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl flex items-center justify-center">
                   <span className="text-gray-500 text-lg">No Image Available</span>

@@ -12,12 +12,22 @@ const roomSchema = z.object({
   type: z.string().min(1, 'Room type is required'),
   price: z.number().positive('Price must be positive'),
   description: z.string().min(1, 'Description is required'),
+  capacity: z.number().min(1, 'Capacity must be at least 1'),
+  amenities: z.array(z.string()),
+  bedType: z.string().min(1, 'Bed type is required'),
+  size: z.string().optional(),
+  images: z.array(z.string()).optional().default([]),
   available: z.boolean().optional().default(true),
 });
 
 export async function GET() {
   const rooms = await prisma.room.findMany();
-  return NextResponse.json(rooms);
+  const imageExtensions = /(\.png|\.jpg|\.jpeg|\.webp|\.gif|\.avif|\.svg)$/i;
+  const sanitized = rooms.map((r) => ({
+    ...r,
+    images: Array.isArray(r.images) ? r.images.filter((url) => imageExtensions.test(url)) : [],
+  }));
+  return NextResponse.json(sanitized);
 }
 
 export async function POST(req: NextRequest) {
@@ -28,30 +38,18 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const formData = await req.formData();
-    const data = {
-      name: formData.get('name') as string,
-      type: formData.get('type') as string,
-      price: parseFloat(formData.get('price') as string),
-      description: formData.get('description') as string,
-    };
+    const data = await req.json();
     const validatedData = roomSchema.parse(data);
-    let imageId: string | undefined;
-
-    const file = formData.get('image') as File | null;
-    if (file) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      imageId = await uploadImage(buffer, file.name);
-    }
 
     const room = await prisma.room.create({
-      data: { ...validatedData, imageId },
+      data: validatedData,
     });
     return NextResponse.json(room, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors }, { status: 400 });
     }
+    console.error('Error creating room:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -151,16 +151,16 @@ export default function Home() {
       </nav>
 
       <main>
-        {/* Hero Section */}
+      {/* Hero Section */}
         <section className="relative h-[70vh] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0">
-            <Image
+        <Image
               src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
               alt="Luxury Hotel Interior"
-              fill
-              className="object-cover"
-              priority
-            />
+          fill
+          className="object-cover"
+          priority
+        />
             <div className="absolute inset-0 bg-black bg-opacity-40"></div>
           </div>
           
@@ -182,13 +182,13 @@ export default function Home() {
                 href="/rooms"
                 className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-gray-900 transition-all"
               >
-                Book Now
-              </Link>
+            Book Now
+          </Link>
             </div>
-          </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Features Section */}
+      {/* Features Section */}
         <section className="py-20 px-4 max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-800 mb-4">Why Choose Hotel Paradise?</h2>
@@ -197,14 +197,14 @@ export default function Home() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center group">
               <div className="relative overflow-hidden rounded-xl mb-6">
-                <Image
+            <Image
                   src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
                   alt="Luxury Rooms"
-                  width={400}
-                  height={300}
+              width={400}
+              height={300}
                   className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
                 />
               </div>
@@ -212,15 +212,15 @@ export default function Home() {
               <p className="text-gray-600 leading-relaxed">
                 Spacious, elegantly designed rooms with modern amenities and breathtaking views
               </p>
-            </div>
+          </div>
             
             <div className="text-center group">
               <div className="relative overflow-hidden rounded-xl mb-6">
-                <Image
+            <Image
                   src="https://images.unsplash.com/photo-1551218808-94e220e084d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-                  alt="Fine Dining"
-                  width={400}
-                  height={300}
+              alt="Fine Dining"
+              width={400}
+              height={300}
                   className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
                 />
               </div>
@@ -228,15 +228,15 @@ export default function Home() {
               <p className="text-gray-600 leading-relaxed">
                 Award-winning restaurants serving exquisite cuisine prepared by world-class chefs
               </p>
-            </div>
+          </div>
             
             <div className="text-center group">
               <div className="relative overflow-hidden rounded-xl mb-6">
-                <Image
+            <Image
                   src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
                   alt="Spa & Wellness"
-                  width={400}
-                  height={300}
+              width={400}
+              height={300}
                   className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
                 />
               </div>
@@ -339,11 +339,11 @@ export default function Home() {
               >
                 View All Rooms
               </Link>
-            </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* CTA Section */}
+      {/* CTA Section */}
         <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-700">
           <div className="max-w-4xl mx-auto text-center text-white px-4">
             <h2 className="text-4xl font-bold mb-6">Ready for Your Perfect Stay?</h2>
@@ -356,19 +356,19 @@ export default function Home() {
                 className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors"
               >
                 Browse Rooms
-              </Link>
+          </Link>
               {!user && (
                 <Link 
                   href="/signup"
                   className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
                 >
                   Create Account
-                </Link>
+          </Link>
               )}
             </div>
-          </div>
-        </section>
-      </main>
+        </div>
+      </section>
+    </main>
 
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-12">

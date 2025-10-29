@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 
@@ -82,6 +83,7 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<Array<{ id: string; email: string; isAdmin: boolean; firstName?: string | null; lastName?: string | null; createdAt: string }>>([]);
   const [newRoom, setNewRoom] = useState({
     name: '',
     type: '',
@@ -99,6 +101,8 @@ export default function AdminDashboard() {
   const [showRoomForm, setShowRoomForm] = useState(false);
   const router = useRouter();
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const newImageInputRef = useRef<HTMLInputElement | null>(null);
+  const editImageInputRef = useRef<HTMLInputElement | null>(null);
 
   const availableAmenities = ['WiFi', 'AC', 'Pool', 'Gym', 'Spa', 'Restaurant', 'Parking', 'Room Service'];
   const roomTypes = ['Standard', 'Deluxe', 'Suite', 'Presidential'];
@@ -111,6 +115,13 @@ export default function AdminDashboard() {
     }
     fetchData();
   }, [token, router]);
+
+  useEffect(() => {
+    if (!token) return;
+    if (activeTab === 'users') {
+      fetchUsers();
+    }
+  }, [activeTab, token]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -129,6 +140,117 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch('/api/users', { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) {
+        setUsers(await res.json());
+      }
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  };
+
+  const toggleUserAdmin = async (id: string, makeAdmin: boolean) => {
+    try {
+      const res = await fetch(`/api/users/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isAdmin: makeAdmin }),
+      });
+      if (res.ok) {
+        setUsers(prev => prev.map(u => (u.id === id ? { ...u, isAdmin: makeAdmin } : u)));
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Error updating user');
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      alert('Error updating user');
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setNewRoom(prev => ({
+          ...prev,
+          images: [...prev.images, result.imageUrl]
+        }));
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Error uploading image');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image');
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setNewRoom(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleEditImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setEditForm(prev => ({
+          ...prev,
+          images: [...(prev.images || []), result.imageUrl]
+        }));
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Error uploading image');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image');
+    }
+  };
+
+  const removeEditImage = (index: number) => {
+    setEditForm(prev => ({
+      ...prev,
+      images: prev.images?.filter((_, i) => i !== index) || []
+    }));
   };
 
   const handleCreateRoom = async (e: React.FormEvent) => {
@@ -301,6 +423,7 @@ export default function AdminDashboard() {
             { id: 'analytics', label: 'Analytics' },
             { id: 'rooms', label: 'Room Management' },
             { id: 'bookings', label: 'Bookings' },
+            { id: 'users', label: 'Users' },
           ].map(tab => (
             <button
               key={tab.id}
@@ -334,6 +457,46 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
+
+      {/* Users Tab */}
+      {activeTab === 'users' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Users</h2>
+            <button onClick={fetchUsers} className="bg-gray-100 px-3 py-2 rounded border hover:bg-gray-200">Refresh</button>
+          </div>
+          <div className="bg-white shadow overflow-hidden sm:rounded-md">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-3"/>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {users.map(u => (
+                  <tr key={u.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{u.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{[u.firstName, u.lastName].filter(Boolean).join(' ') || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`px-2 py-1 rounded-full text-xs ${u.isAdmin ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>{u.isAdmin ? 'Admin' : 'User'}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                      {u.isAdmin ? (
+                        <button onClick={() => toggleUserAdmin(u.id, false)} className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Revoke Admin</button>
+                      ) : (
+                        <button onClick={() => toggleUserAdmin(u.id, true)} className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Make Admin</button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="flex items-center">
@@ -640,6 +803,49 @@ export default function AdminDashboard() {
                 {errors.amenities && <p className="text-red-500 text-sm">{errors.amenities}</p>}
               </div>
 
+              <div>
+                <label className="block text-sm font-medium mb-2">Room Images</label>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={newImageInputRef}
+                      onChange={handleImageUpload}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => newImageInputRef.current?.click()}
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      Upload Image
+                    </button>
+                  </div>
+                  
+                  {newRoom.images.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {newRoom.images.map((image, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={image}
+                            alt={`Room image ${index + 1}`}
+                            className="w-full h-24 object-cover rounded"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="flex gap-2">
                 <button
                   type="submit"
@@ -782,6 +988,49 @@ export default function AdminDashboard() {
                   ))}
                 </div>
                 {errors.amenities && <p className="text-red-500 text-sm">{errors.amenities}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Room Images</label>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={editImageInputRef}
+                      onChange={(e) => handleEditImageUpload(e)}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => editImageInputRef.current?.click()}
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      Upload Image
+                    </button>
+                  </div>
+                  
+                  {editForm.images && editForm.images.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {editForm.images.map((image, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={image}
+                            alt={`Room image ${index + 1}`}
+                            className="w-full h-24 object-cover rounded"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeEditImage(index)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex gap-2">

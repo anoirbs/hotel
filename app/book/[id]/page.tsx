@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { z } from 'zod';
 
 const bookingSchema = z.object({
@@ -29,7 +29,7 @@ interface Room {
   images: string[];
 }
 
-export default function BookRoom({ params }: { params: { id: string } }) {
+export default function BookRoom() {
   const [room, setRoom] = useState<Room | null>(null);
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -40,6 +40,7 @@ export default function BookRoom({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
+  const params = useParams() as { id: string };
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const stripeKey = typeof window !== 'undefined' ? localStorage.getItem('stripe_publishable_key') : null;
 
