@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
-
-const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest) {
   const token = req.headers.get('authorization')?.split(' ')[1];
@@ -33,6 +31,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+
+
+
 
 
 

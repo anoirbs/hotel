@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 const reviewSchema = z.object({
   roomId: z.string().min(1, 'Room ID is required'),

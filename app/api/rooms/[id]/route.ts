@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { uploadImage } from '@/lib/gridfs';
 import { verifyToken } from '@/lib/auth';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 const updateRoomSchema = z.object({
   name: z.string().min(1, 'Room name is required').optional(),

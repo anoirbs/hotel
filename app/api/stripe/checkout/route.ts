@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { PrismaClient } from '@prisma/client';
-import Stripe from 'stripe';
+import { prisma } from '@/lib/prisma';
+import { getStripe } from '@/lib/stripe';
 import { verifyToken } from '@/lib/auth';
-
-const prisma = new PrismaClient();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-});
 
 export async function POST(req: NextRequest) {
   const token = req.headers.get('authorization')?.split(' ')[1];
@@ -17,6 +12,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const stripe = getStripe();
     const { roomId, checkIn, checkOut } = await req.json();
     const room = await prisma.room.findUnique({ where: { id: roomId } });
     if (!room) {
@@ -57,7 +53,18 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ sessionId: session.id });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error creating checkout session:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    
+    // Check if it's a Stripe authentication error
+    if (errorMessage.includes('Invalid API Key') || errorMessage.includes('Authentication')) {
+      return NextResponse.json(
+        { error: 'Stripe API key is invalid. Please check your Stripe configuration in the admin panel.' },
+        { status: 500 }
+      );
+    }
+    
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 

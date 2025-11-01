@@ -4,6 +4,122 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
+import InvoicesList from '@/components/InvoicesList';
+
+// Room Card Component with Image Carousel
+function RoomCardWithCarousel({ 
+  room, 
+  onEdit, 
+  onDelete 
+}: { 
+  room: Room; 
+  onEdit: (room: Room) => void; 
+  onDelete: (id: string) => void;
+}) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const roomImages = room.images && room.images.length > 0 ? room.images : [];
+
+  return (
+    <div className="bg-white border rounded-lg shadow-md overflow-hidden">
+      <div className="relative w-full h-48 bg-gray-200">
+        {roomImages.length > 0 ? (
+          <>
+            <img 
+              src={roomImages[currentImageIndex]} 
+              alt={room.name} 
+              className="w-full h-48 object-cover" 
+            />
+            {roomImages.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex((prev) => (prev === 0 ? roomImages.length - 1 : prev - 1));
+                  }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 shadow-md transition-all z-10"
+                  aria-label="Previous image"
+                >
+                  <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex((prev) => (prev === roomImages.length - 1 ? 0 : prev + 1));
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 shadow-md transition-all z-10"
+                  aria-label="Next image"
+                >
+                  <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                  {roomImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(idx);
+                      }}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        idx === currentImageIndex ? 'bg-white' : 'bg-white bg-opacity-50'
+                      }`}
+                      aria-label={`Go to image ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        ) : (
+          <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+            <span className="text-gray-500">No Image</span>
+          </div>
+        )}
+      </div>
+      
+      <div className="p-4">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="font-bold text-lg">{room.name}</h3>
+          <span className="text-lg font-semibold text-blue-600">${room.price}/night</span>
+        </div>
+        
+        <p className="text-gray-600 text-sm mb-2">{room.type} • {room.capacity} guests • {room.bedType}</p>
+        {room.size && <p className="text-gray-500 text-sm mb-2">{room.size} sq ft</p>}
+        
+        <p className="text-gray-700 text-sm mb-3">{room.description}</p>
+        
+        <div className="flex flex-wrap gap-1 mb-3">
+          {room.amenities.slice(0, 3).map(amenity => (
+            <span key={amenity} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+              {amenity}
+            </span>
+          ))}
+          {room.amenities.length > 3 && (
+            <span className="text-gray-500 text-xs">+{room.amenities.length - 3} more</span>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => onEdit(room)}
+            className="flex-1 bg-blue-500 text-white py-1 px-3 rounded text-sm hover:bg-blue-600"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => onDelete(room.id)}
+            className="flex-1 bg-red-500 text-white py-1 px-3 rounded text-sm hover:bg-red-600"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface Room {
   id: string;
@@ -75,10 +191,11 @@ const roomSchema = z.object({
   amenities: z.array(z.string()),
   bedType: z.string().min(1, 'Bed type is required'),
   size: z.string().optional(),
+  images: z.array(z.string()).optional()
 });
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'rooms' | 'bookings' | 'users' | 'invoices'>('analytics');
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
@@ -99,6 +216,16 @@ export default function AdminDashboard() {
   const [editForm, setEditForm] = useState<Partial<Room>>({});
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showRoomForm, setShowRoomForm] = useState(false);
+  const [showCreateUserForm, setShowCreateUserForm] = useState(false);
+  const [newUser, setNewUser] = useState({
+    email: '',
+    password: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    isAdmin: false,
+    skipEmailVerification: true,
+  });
   const router = useRouter();
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const newImageInputRef = useRef<HTMLInputElement | null>(null);
@@ -172,6 +299,41 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Error updating user:', error);
       alert('Error updating user');
+    }
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/users/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newUser),
+      });
+
+      if (response.ok) {
+        alert('User created successfully');
+        setNewUser({
+          email: '',
+          password: '',
+          firstName: '',
+          lastName: '',
+          phone: '',
+          isAdmin: false,
+          skipEmailVerification: true,
+        });
+        setShowCreateUserForm(false);
+        fetchUsers();
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Error creating user');
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+      alert('Error creating user');
     }
   };
 
@@ -389,6 +551,7 @@ export default function AdminDashboard() {
     }
   };
 
+
   if (loading) {
     return (
       <main className="p-8 max-w-7xl mx-auto">
@@ -419,15 +582,16 @@ export default function AdminDashboard() {
       {/* Tab Navigation */}
       <div className="border-b mb-6">
         <nav className="flex space-x-8">
-          {[
-            { id: 'analytics', label: 'Analytics' },
-            { id: 'rooms', label: 'Room Management' },
-            { id: 'bookings', label: 'Bookings' },
-            { id: 'users', label: 'Users' },
-          ].map(tab => (
+          {([
+            { id: 'analytics' as const, label: 'Analytics' },
+            { id: 'rooms' as const, label: 'Room Management' },
+            { id: 'bookings' as const, label: 'Bookings' },
+            { id: 'users' as const, label: 'Users' },
+            { id: 'invoices' as const, label: 'Invoices' },
+          ] as const).map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.id
                   ? 'border-blue-500 text-blue-600'
@@ -457,46 +621,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
-
-      {/* Users Tab */}
-      {activeTab === 'users' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Users</h2>
-            <button onClick={fetchUsers} className="bg-gray-100 px-3 py-2 rounded border hover:bg-gray-200">Refresh</button>
-          </div>
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3"/>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.map(u => (
-                  <tr key={u.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{u.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{[u.firstName, u.lastName].filter(Boolean).join(' ') || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`px-2 py-1 rounded-full text-xs ${u.isAdmin ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>{u.isAdmin ? 'Admin' : 'User'}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                      {u.isAdmin ? (
-                        <button onClick={() => toggleUserAdmin(u.id, false)} className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Revoke Admin</button>
-                      ) : (
-                        <button onClick={() => toggleUserAdmin(u.id, true)} className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Make Admin</button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
 
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="flex items-center">
@@ -570,6 +694,54 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* Users Tab */}
+      {activeTab === 'users' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Users</h2>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setShowCreateUserForm(true)}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Add New User
+              </button>
+              <button onClick={fetchUsers} className="bg-gray-100 px-3 py-2 rounded border hover:bg-gray-200">Refresh</button>
+            </div>
+          </div>
+          <div className="bg-white shadow overflow-hidden sm:rounded-md">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-3"/>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {users.map(u => (
+                  <tr key={u.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{u.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{[u.firstName, u.lastName].filter(Boolean).join(' ') || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`px-2 py-1 rounded-full text-xs ${u.isAdmin ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>{u.isAdmin ? 'Admin' : 'User'}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                      {u.isAdmin ? (
+                        <button onClick={() => toggleUserAdmin(u.id, false)} className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Revoke Admin</button>
+                      ) : (
+                        <button onClick={() => toggleUserAdmin(u.id, true)} className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Make Admin</button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Rooms Tab */}
       {activeTab === 'rooms' && (
         <div className="space-y-6">
@@ -585,56 +757,15 @@ export default function AdminDashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {rooms.map((room) => (
-              <div key={room.id} className="bg-white border rounded-lg shadow-md overflow-hidden">
-                {room.images && room.images.length > 0 ? (
-                  <img src={room.images[0]} alt={room.name} className="w-full h-48 object-cover" />
-                ) : (
-                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500">No Image</span>
-                  </div>
-                )}
-                
-                <div className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-lg">{room.name}</h3>
-                    <span className="text-lg font-semibold text-blue-600">${room.price}/night</span>
-                  </div>
-                  
-                  <p className="text-gray-600 text-sm mb-2">{room.type} • {room.capacity} guests • {room.bedType}</p>
-                  {room.size && <p className="text-gray-500 text-sm mb-2">{room.size} sq ft</p>}
-                  
-                  <p className="text-gray-700 text-sm mb-3">{room.description}</p>
-                  
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {room.amenities.slice(0, 3).map(amenity => (
-                      <span key={amenity} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                        {amenity}
-                      </span>
-                    ))}
-                    {room.amenities.length > 3 && (
-                      <span className="text-gray-500 text-xs">+{room.amenities.length - 3} more</span>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setEditingId(room.id);
-                        setEditForm(room);
-                      }}
-                      className="flex-1 bg-blue-500 text-white py-1 px-3 rounded text-sm hover:bg-blue-600"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteRoom(room.id)}
-                      className="flex-1 bg-red-500 text-white py-1 px-3 rounded text-sm hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <RoomCardWithCarousel
+                key={room.id}
+                room={room}
+                onEdit={(room) => {
+                  setEditingId(room.id);
+                  setEditForm(room);
+                }}
+                onDelete={handleDeleteRoom}
+              />
             ))}
           </div>
         </div>
@@ -668,7 +799,7 @@ export default function AdminDashboard() {
                         <p className="font-medium text-gray-900">${booking.totalPrice.toFixed(2)}</p>
                       </div>
                       {booking.specialRequests && (
-                        <p className="mt-1 text-sm text-gray-600 italic">"{booking.specialRequests}"</p>
+                        <p className="mt-1 text-sm text-gray-600 italic">&ldquo;{booking.specialRequests}&rdquo;</p>
                       )}
                     </div>
                   </div>
@@ -676,6 +807,14 @@ export default function AdminDashboard() {
               ))}
             </ul>
           </div>
+        </div>
+      )}
+
+      {/* Invoices Tab */}
+      {activeTab === 'invoices' && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-semibold">Invoices</h2>
+          <InvoicesList token={token} isAdmin={true} />
         </div>
       )}
 
@@ -1045,6 +1184,123 @@ export default function AdminDashboard() {
                   onClick={() => {
                     setEditingId(null);
                     setEditForm({});
+                  }}
+                  className="flex-1 bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create User Modal */}
+      {showCreateUserForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold mb-4">Add New User</h3>
+            
+            <form onSubmit={handleCreateUser} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Email *</label>
+                <input
+                  type="email"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Password *</label>
+                <input
+                  type="password"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, password: e.target.value }))}
+                  className="w-full p-2 border rounded"
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">First Name</label>
+                  <input
+                    type="text"
+                    value={newUser.firstName}
+                    onChange={(e) => setNewUser(prev => ({ ...prev, firstName: e.target.value }))}
+                    className="w-full p-2 border rounded"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Last Name</label>
+                  <input
+                    type="text"
+                    value={newUser.lastName}
+                    onChange={(e) => setNewUser(prev => ({ ...prev, lastName: e.target.value }))}
+                    className="w-full p-2 border rounded"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Phone</label>
+                <input
+                  type="tel"
+                  value={newUser.phone}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, phone: e.target.value }))}
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+
+              <div className="flex items-center gap-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={newUser.isAdmin}
+                    onChange={(e) => setNewUser(prev => ({ ...prev, isAdmin: e.target.checked }))}
+                    className="mr-2"
+                  />
+                  <span className="text-sm font-medium">Admin Role</span>
+                </label>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={newUser.skipEmailVerification}
+                    onChange={(e) => setNewUser(prev => ({ ...prev, skipEmailVerification: e.target.checked }))}
+                    className="mr-2"
+                  />
+                  <span className="text-sm font-medium">Skip Email Verification</span>
+                </label>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+                >
+                  Create User
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateUserForm(false);
+                    setNewUser({
+                      email: '',
+                      password: '',
+                      firstName: '',
+                      lastName: '',
+                      phone: '',
+                      isAdmin: false,
+                      skipEmailVerification: true,
+                    });
                   }}
                   className="flex-1 bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
                 >

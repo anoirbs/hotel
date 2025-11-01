@@ -56,9 +56,18 @@ export default function Signup() {
       });
       
       if (res.ok) {
-        const { token } = await res.json();
-        localStorage.setItem('token', token);
-        router.push('/dashboard');
+        const response = await res.json();
+        
+        // Check if verification is needed
+        if (response.verificationUrl) {
+          // In development, show the verification URL
+          alert(`Account created! Please check your email for verification link.\n\nIn development, you can use this link:\n${response.verificationUrl}`);
+        } else {
+          alert(response.message || 'Account created! Please check your email to verify your account.');
+        }
+        
+        // Redirect to login page
+        router.push('/login?message=Please verify your email to complete registration');
       } else {
         const { error } = await res.json();
         if (Array.isArray(error)) {

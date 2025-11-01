@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { PrismaClient } from '@prisma/client';
-import Stripe from 'stripe';
+import { prisma } from '@/lib/prisma';
+import { getStripe } from '@/lib/stripe';
 import { verifyToken } from '@/lib/auth';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-});
 
 const bookingSchema = z.object({
   roomId: z.string().min(1, 'Room ID is required'),

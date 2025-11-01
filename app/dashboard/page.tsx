@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import InvoicesList from '@/components/InvoicesList';
 
 interface Booking {
   id: string;
@@ -460,6 +461,20 @@ export default function UserDashboard() {
           </div>
         </div>
       )}
+
+        {/* Invoices Section */}
+        <div className="mt-12">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">My Invoices</h2>
+              <p className="text-gray-600">View and download your booking invoices</p>
+            </div>
+          </div>
+          <InvoicesList 
+            token={typeof window !== 'undefined' ? localStorage.getItem('token') : null} 
+            isAdmin={false}
+          />
+        </div>
     </div>
   );
 }

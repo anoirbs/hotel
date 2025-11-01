@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getStripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
+import { getStripe } from '@/lib/stripe';
 import { verifyToken } from '@/lib/auth';
 import { z } from 'zod';
 
 const confirmSchema = z.object({
-  sessionId: z.string().min(1, 'Session ID is required'),
+  invoiceId: z.string().min(1, 'Invoice ID is required'),
   roomId: z.string().min(1, 'Room ID is required'),
   userName: z.string().min(1, 'User name is required'),
   userEmail: z.string().email('Invalid email'),
@@ -26,39 +26,58 @@ export async function POST(req: NextRequest) {
     const stripe = getStripe();
     const data = confirmSchema.parse(await req.json());
     
-    console.log('Confirm session request:', { sessionId: data.sessionId, userId: payload.id });
+    console.log('Confirm invoice request:', { invoiceId: data.invoiceId, userId: payload.id });
     
-    // Retrieve and verify checkout session
-    const session = await stripe.checkout.sessions.retrieve(data.sessionId);
-    console.log('Session retrieved:', { 
-      id: session.id, 
-      status: session.status, 
-      payment_status: session.payment_status,
-      metadata: session.metadata 
-    });
+    // Retrieve and verify invoice
+    const invoice = await stripe.invoices.retrieve(data.invoiceId);
+    console.log('Invoice retrieved:', { id: invoice.id, status: invoice.status, metadata: invoice.metadata });
     
-    // Check if payment was completed
-    if (session.payment_status !== 'paid') {
+    // Check if invoice is paid or has a successful payment intent
+    let isPaid = invoice.status === 'paid';
+    
+    // If not marked as paid, check payment intent status
+    if (!isPaid && invoice.payment_intent) {
+      const paymentIntentId = typeof invoice.payment_intent === 'string'
+        ? invoice.payment_intent
+        : invoice.payment_intent.id;
+      
+      if (paymentIntentId) {
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        isPaid = paymentIntent.status === 'succeeded';
+        
+        // If payment succeeded but invoice not marked paid, pay the invoice
+        if (isPaid && invoice.status !== 'paid') {
+          try {
+            await stripe.invoices.pay(invoice.id);
+          } catch (err) {
+            console.warn('Could not mark invoice as paid:', err);
+            // Continue anyway since payment succeeded
+          }
+        }
+      }
+    }
+    
+    if (!isPaid) {
       return NextResponse.json({ 
-        error: `Payment not completed. Current status: ${session.payment_status}. Please complete payment first.` 
+        error: `Invoice is not paid. Current status: ${invoice.status}. Please complete payment first.` 
       }, { status: 400 });
     }
 
-    // Verify the session belongs to the user
-    console.log('Checking session ownership:', { 
-      sessionUserId: session.metadata?.userId, 
+    // Verify the invoice belongs to the user
+    console.log('Checking invoice ownership:', { 
+      invoiceUserId: invoice.metadata?.userId, 
       payloadId: payload.id,
-      match: session.metadata?.userId === payload.id 
+      match: invoice.metadata?.userId === payload.id 
     });
     
-    if (session.metadata?.userId !== payload.id) {
-      console.error('Session ownership mismatch:', {
-        sessionUserId: session.metadata?.userId,
+    if (invoice.metadata?.userId !== payload.id) {
+      console.error('Invoice ownership mismatch:', {
+        invoiceUserId: invoice.metadata?.userId,
         payloadId: payload.id,
-        sessionMetadata: session.metadata
+        invoiceMetadata: invoice.metadata
       });
       return NextResponse.json({ 
-        error: `Session does not belong to user` 
+        error: `Invoice does not belong to user. Invoice userId: ${invoice.metadata?.userId}, Payload userId: ${payload.id}` 
       }, { status: 403 });
     }
 
@@ -102,10 +121,15 @@ export async function POST(req: NextRequest) {
     const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
     const totalPrice = room.price * nights;
 
-    // Get payment intent ID from session
-    const paymentIntentId = typeof session.payment_intent === 'string' 
-      ? session.payment_intent 
-      : session.payment_intent?.id || null;
+    // Refresh invoice to get PDF URL (it may not be immediately available)
+    let invoiceUrl: string | null = null;
+    try {
+      const refreshedInvoice = await stripe.invoices.retrieve(data.invoiceId);
+      invoiceUrl = refreshedInvoice.invoice_pdf || refreshedInvoice.hosted_invoice_url || null;
+    } catch (err) {
+      console.warn('Could not fetch invoice PDF URL:', err);
+      invoiceUrl = invoice.invoice_pdf || invoice.hosted_invoice_url || null;
+    }
 
     // Create booking
     console.log('Creating booking with data:', {
@@ -114,8 +138,7 @@ export async function POST(req: NextRequest) {
       checkIn: checkInDate,
       checkOut: checkOutDate,
       totalPrice,
-      sessionId: data.sessionId,
-      paymentIntentId,
+      invoiceId: data.invoiceId,
     });
     
     const booking = await prisma.booking.create({
@@ -127,7 +150,9 @@ export async function POST(req: NextRequest) {
         checkIn: checkInDate,
         checkOut: checkOutDate,
         totalPrice,
-        paymentId: paymentIntentId,
+        paymentId: typeof invoice.payment_intent === 'string' ? invoice.payment_intent : invoice.payment_intent?.id || null,
+        invoiceId: data.invoiceId,
+        invoiceUrl,
         status: 'confirmed',
         specialRequests: data.specialRequests || null,
       },
@@ -140,7 +165,7 @@ export async function POST(req: NextRequest) {
       console.error('Validation error:', error.errors);
       return NextResponse.json({ error: error.errors }, { status: 400 });
     }
-    console.error('Error confirming booking:', error);
+    console.error('Error confirming invoice:', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     console.error('Error details:', {
       message: errorMessage,
@@ -152,3 +177,4 @@ export async function POST(req: NextRequest) {
     }, { status: 500 });
   }
 }
+

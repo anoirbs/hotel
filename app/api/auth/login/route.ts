@@ -15,6 +15,14 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
+
+    // Check if email is verified (only for non-admin users)
+    if (!user.isAdmin && !user.emailVerified) {
+      return NextResponse.json({ 
+        error: 'Please verify your email before logging in. Check your inbox for the verification link.' 
+      }, { status: 403 });
+    }
+
     const token = generateToken(user);
     return NextResponse.json({ token, isAdmin: user.isAdmin });
   } catch (error) {

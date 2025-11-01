@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -37,7 +37,7 @@ export default function Login() {
         if (isAdmin) {
           router.push('/admin/dashboard');
         } else {
-          router.push('/dashboard');
+          router.push('/rooms');
         }
       } else {
         const { error } = await res.json();

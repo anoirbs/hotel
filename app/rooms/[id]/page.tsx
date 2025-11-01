@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 
 import Image from 'next/image';
 import Link from 'next/link';
+import PaymentPopup from '@/components/PaymentPopup';
 
 interface Room {
   id: string;
@@ -56,6 +57,8 @@ export default function RoomDetails() {
     userEmail: '',
     specialRequests: '',
   });
+  const [showPaymentPopup, setShowPaymentPopup] = useState(false);
+  const [isProcessingBooking, setIsProcessingBooking] = useState(false);
   const router = useRouter();
   const params = useParams() as { id: string };
 
@@ -163,35 +166,44 @@ export default function RoomDetails() {
       return;
     }
 
+    // Check room availability first
     try {
-      const response = await fetch('/api/bookings', {
+      const availabilityResponse = await fetch('/api/rooms/availability', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          roomId: params.id,
-          userName: bookingForm.userName,
-          userEmail: bookingForm.userEmail,
           checkIn: bookingForm.checkIn,
           checkOut: bookingForm.checkOut,
-          specialRequests: bookingForm.specialRequests,
+          roomId: params.id,
         }),
       });
 
-      if (response.ok) {
-        const booking = await response.json();
-        alert('Booking created successfully! Redirecting to payment...');
-        router.push(`/book/${booking.id}`);
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Error creating booking');
+      if (!availabilityResponse.ok) {
+        const errorData = await availabilityResponse.json();
+        alert(errorData.error || 'Room not available for selected dates');
+        return;
       }
+
+      // Open payment popup
+      setShowPaymentPopup(true);
     } catch (error) {
-      console.error('Error creating booking:', error);
-      alert('Error creating booking');
+      console.error('Error checking availability:', error);
+      alert('Error checking room availability');
     }
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowPaymentPopup(false);
+    setShowBookingForm(false);
+    setBookingForm({
+      checkIn: '',
+      checkOut: '',
+      userName: '',
+      userEmail: '',
+      specialRequests: '',
+    });
+    alert('Booking confirmed! Payment successful.');
+    router.push('/dashboard');
   };
 
   const calculateTotalPrice = () => {
@@ -622,6 +634,28 @@ export default function RoomDetails() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Payment Popup */}
+      {showPaymentPopup && room && (
+        <PaymentPopup
+          isOpen={showPaymentPopup}
+          onClose={() => setShowPaymentPopup(false)}
+          amount={calculateTotalPrice()}
+          roomName={room.name}
+          checkIn={bookingForm.checkIn}
+          checkOut={bookingForm.checkOut}
+          onSuccess={handlePaymentSuccess}
+          bookingData={{
+            roomId: params.id,
+            userName: bookingForm.userName,
+            userEmail: bookingForm.userEmail,
+            checkIn: bookingForm.checkIn,
+            checkOut: bookingForm.checkOut,
+            specialRequests: bookingForm.specialRequests,
+          }}
+          stripePublishableKey={typeof window !== 'undefined' ? localStorage.getItem('stripe_publishable_key') : null}
+        />
       )}
     </div>
   );

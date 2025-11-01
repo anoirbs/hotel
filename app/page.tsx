@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import RoomImageCarousel from '@/components/RoomImageCarousel';
 
 interface Room {
   id: string;
@@ -268,20 +269,13 @@ export default function Home() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {rooms.map((room) => (
                   <div key={room.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 group">
-                    <div className="relative overflow-hidden">
-                      {room.images && room.images.length > 0 ? (
-                        <Image
-                          src={room.images[0]}
-                          alt={room.name}
-                          width={400}
-                          height={250}
-                          className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-64 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                          <span className="text-gray-500 text-lg">No Image Available</span>
-                        </div>
-                      )}
+                    <div className="relative overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                      <RoomImageCarousel 
+                        images={room.images || []} 
+                        roomName={room.name}
+                        width={400}
+                        height={250}
+                      />
                       <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full shadow-md">
                         <span className="text-blue-600 font-bold">${room.price}/night</span>
                       </div>

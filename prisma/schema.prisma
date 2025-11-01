@@ -37,6 +37,8 @@ model Booking {
   totalPrice  Float
   status      String   @default("confirmed") // confirmed, cancelled, completed
   paymentId   String?  // Stripe payment intent ID
+  invoiceId   String?  @unique // Stripe invoice ID
+  invoiceUrl  String?  // Stripe invoice PDF URL
   specialRequests String?
   room        Room     @relation(fields: [roomId], references: [id])
   user        User     @relation(fields: [userId], references: [id])
@@ -45,20 +47,23 @@ model Booking {
 }
 
 model User {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  email       String    @unique
-  password    String
-  firstName   String?
-  lastName    String?
-  phone       String?
-  isAdmin     Boolean   @default(false)
-  loyaltyPoints Int     @default(0)
-  preferences String[]  // User preferences like ["pool", "gym", "spa"]
-  bookings    Booking[]
-  reviews     Review[]
-  auditLogs   AuditLog[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  email           String    @unique
+  password        String
+  firstName       String?
+  lastName        String?
+  phone           String?
+  isAdmin         Boolean   @default(false)
+  emailVerified   Boolean   @default(false)
+  verificationToken String? @unique
+  verificationTokenExpires DateTime?
+  loyaltyPoints   Int       @default(0)
+  preferences     String[]  // User preferences like ["pool", "gym", "spa"]
+  bookings        Booking[]
+  reviews         Review[]
+  auditLogs       AuditLog[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model Review {
