@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { generateToken } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 const signupSchema = z.object({

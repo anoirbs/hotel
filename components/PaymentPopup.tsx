@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import {
-  Elements,
   CardElement,
-  useStripe,
-  useElements
+  Elements,
+  useElements,
+  useStripe
 } from '@stripe/react-stripe-js';
+import { StripeElementsOptions, loadStripe } from '@stripe/stripe-js';
+import { useEffect, useState } from 'react';
 
 interface PaymentPopupProps {
   isOpen: boolean;
@@ -289,7 +289,7 @@ export default function PaymentPopup({
   const options: StripeElementsOptions = {
     mode: 'payment',
     amount: Math.round(amount * 100),
-    currency: 'usd',
+    currency: 'eur',
   };
 
   // Use the key from localStorage if available, otherwise use env

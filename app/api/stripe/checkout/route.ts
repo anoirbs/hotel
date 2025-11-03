@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { prisma } from '@/lib/prisma';
 import { getStripe } from '@/lib/stripe';
+import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
@@ -24,12 +24,39 @@ export async function POST(req: NextRequest) {
     const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
     const totalPrice = room.price * nights;
 
-    const session = await stripe.checkout.sessions.create({
+    // const session = await stripe.checkout.sessions.create({
+    //   payment_method_types: ['card'],
+    //   line_items: [
+    //     {
+    //       price_data: {
+    //         currency: 'usd',
+    //         product_data: {
+    //           name: `${room.name} - ${room.type}`,
+    //           description: `Booking from ${checkIn} to ${checkOut}`,
+    //         },
+    //         unit_amount: Math.round(totalPrice * 100),
+    //       },
+    //       quantity: 1,
+    //     },
+    //   ],
+    //   mode: 'payment',
+    //   success_url: `${req.headers.get('origin')}/book/success?session_id={CHECKOUT_SESSION_ID}`,
+    //   cancel_url: `${req.headers.get('origin')}/book/${roomId}`,
+    //   metadata: {
+    //     roomId,
+    //     userId: payload.id,
+    //     checkIn,
+    //     checkOut,
+    //     userName: payload.email,
+    //   },
+    // });
+
+        const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency: 'eur',
             product_data: {
               name: `${room.name} - ${room.type}`,
               description: `Booking from ${checkIn} to ${checkOut}`,
@@ -40,8 +67,7 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.get('origin')}/book/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get('origin')}/book/${roomId}`,
+success_url: `${req.headers.get('origin')}/book/success?session_id={CHECKOUT_SESSION_ID}&roomId=${roomId}&checkIn=${checkIn}&checkOut=${checkOut}`,      cancel_url: `${req.headers.get('origin')}/book/${roomId}`,
       metadata: {
         roomId,
         userId: payload.id,
@@ -50,7 +76,6 @@ export async function POST(req: NextRequest) {
         userName: payload.email,
       },
     });
-
     return NextResponse.json({ sessionId: session.id });
   } catch (error) {
     console.error('Error creating checkout session:', error);

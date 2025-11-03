@@ -3,17 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
-import { z } from 'zod';
-
-const confirmSchema = z.object({
-  sessionId: z.string().min(1, 'Session ID is required'),
-  roomId: z.string().min(1, 'Room ID is required'),
-  userName: z.string().min(1, 'User name is required'),
-  userEmail: z.string().email('Invalid email'),
-  checkIn: z.string().min(1, 'Check-in date is required'),
-  checkOut: z.string().min(1, 'Check-out date is required'),
-  specialRequests: z.string().optional(),
-});
 
 export async function POST(req: NextRequest) {
   const token = req.headers.get('authorization')?.split(' ')[1];
@@ -24,12 +13,16 @@ export async function POST(req: NextRequest) {
 
   try {
     const stripe = getStripe();
-    const data = confirmSchema.parse(await req.json());
+    const { sessionId } = await req.json();
     
-    console.log('Confirm session request:', { sessionId: data.sessionId, userId: payload.id });
+    if (!sessionId) {
+      return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
+    }
+    
+    console.log('Confirm session request:', { sessionId, userId: payload.id });
     
     // Retrieve and verify checkout session
-    const session = await stripe.checkout.sessions.retrieve(data.sessionId);
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
     console.log('Session retrieved:', { 
       id: session.id, 
       status: session.status, 
@@ -45,21 +38,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify the session belongs to the user
-    console.log('Checking session ownership:', { 
-      sessionUserId: session.metadata?.userId, 
-      payloadId: payload.id,
-      match: session.metadata?.userId === payload.id 
-    });
-    
     if (session.metadata?.userId !== payload.id) {
-      console.error('Session ownership mismatch:', {
-        sessionUserId: session.metadata?.userId,
-        payloadId: payload.id,
-        sessionMetadata: session.metadata
-      });
       return NextResponse.json({ 
         error: `Session does not belong to user` 
       }, { status: 403 });
+    }
+
+    // Extract booking data from session metadata
+    const roomId = session.metadata?.roomId;
+    const checkIn = session.metadata?.checkIn;
+    const checkOut = session.metadata?.checkOut;
+    const userName = session.metadata?.userName || payload.email.split('@')[0];
+
+    if (!roomId || !checkIn || !checkOut) {
+      return NextResponse.json({ error: 'Missing booking information in session' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({ where: { id: payload.id } });
@@ -67,18 +59,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const room = await prisma.room.findUnique({ where: { id: data.roomId } });
+    const room = await prisma.room.findUnique({ where: { id: roomId } });
     if (!room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 });
     }
 
-    // Check room availability one more time
-    const checkInDate = new Date(data.checkIn);
-    const checkOutDate = new Date(data.checkOut);
+    // CRITICAL: Check room availability one final time AFTER payment verification
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
     
     const conflictingBookings = await prisma.booking.findMany({
       where: {
-        roomId: data.roomId,
+        roomId: roomId,
         status: 'confirmed',
         OR: [
           {
@@ -92,9 +84,22 @@ export async function POST(req: NextRequest) {
     });
 
     if (conflictingBookings.length > 0) {
+      // Payment was successful but room is no longer available
+      console.error('Room no longer available after payment:', {
+        roomId,
+        checkIn,
+        checkOut,
+        conflictingBookings: conflictingBookings.length,
+        sessionId: session.id
+      });
+      
       return NextResponse.json(
-        { error: 'Room not available for selected dates' },
-        { status: 400 }
+        { 
+          error: 'This room was just booked by another guest. Your payment will be refunded within 5-10 business days. Please choose another room or different dates.',
+          shouldRefund: true,
+          sessionId: session.id
+        },
+        { status: 409 } // 409 Conflict status code
       );
     }
 
@@ -107,45 +112,37 @@ export async function POST(req: NextRequest) {
       ? session.payment_intent 
       : session.payment_intent?.id || null;
 
-    // Create booking
+    // Create booking only after confirming availability
     console.log('Creating booking with data:', {
-      roomId: data.roomId,
+      roomId,
       userId: payload.id,
       checkIn: checkInDate,
       checkOut: checkOutDate,
       totalPrice,
-      sessionId: data.sessionId,
+      sessionId,
       paymentIntentId,
     });
     
     const booking = await prisma.booking.create({
       data: {
-        roomId: data.roomId,
+        roomId,
         userId: payload.id,
-        userName: data.userName,
-        userEmail: data.userEmail,
+        userName,
+        userEmail: user.email,
         checkIn: checkInDate,
         checkOut: checkOutDate,
         totalPrice,
         paymentId: paymentIntentId,
         status: 'confirmed',
-        specialRequests: data.specialRequests || null,
+        specialRequests: null,
       },
     });
 
     console.log('Booking created successfully:', booking.id);
     return NextResponse.json(booking, { status: 201 });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      console.error('Validation error:', error.errors);
-      return NextResponse.json({ error: error.errors }, { status: 400 });
-    }
     console.error('Error confirming booking:', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-    console.error('Error details:', {
-      message: errorMessage,
-      stack: error instanceof Error ? error.stack : undefined,
-    });
     return NextResponse.json({ 
       error: errorMessage,
       details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined

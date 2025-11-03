@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { prisma } from '@/lib/prisma';
 import { getStripe } from '@/lib/stripe';
+import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
     const invoiceItem = await stripe.invoiceItems.create({
       customer: customerId,
       amount: Math.round(amount * 100), // Convert to cents
-      currency: 'usd',
+      currency: 'eur',
       description: `${room.name} - ${room.type} - Booking from ${checkIn} to ${checkOut}`,
     });
 
