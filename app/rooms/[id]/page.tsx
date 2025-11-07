@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import PaymentPopup from '@/components/PaymentPopup';
+import { useLanguage } from '@/lib/language-context';
 
 interface Room {
   id: string;
@@ -46,6 +47,7 @@ export default function RoomDetails() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [selectedImage, setSelectedImage] = useState(0);
   const [reviewForm, setReviewForm] = useState({
     rating: 5,
     comment: '',
@@ -61,6 +63,7 @@ export default function RoomDetails() {
   const [isProcessingBooking, setIsProcessingBooking] = useState(false);
   const router = useRouter();
   const params = useParams() as { id: string };
+  const { t } = useLanguage();
 
   useEffect(() => {
     checkAuth();
@@ -95,6 +98,10 @@ export default function RoomDetails() {
       const response = await fetch(`/api/rooms/${params.id}`);
       if (response.ok) {
         const roomData = await response.json();
+        // Ensure images array exists and has valid values
+        if (!roomData.images || !Array.isArray(roomData.images)) {
+          roomData.images = [];
+        }
         setRoom(roomData);
       } else {
         router.push('/rooms');
@@ -238,12 +245,12 @@ export default function RoomDetails() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Room not found</h1>
+          <h1 className="text-2xl font-bold text-red-600 mb-4">{t("roomNotFound")}</h1>
           <Link
             href="/rooms"
             className="btn-primary"
           >
-            Back to Rooms
+            {t("backToRooms")}
           </Link>
         </div>
       </div>
@@ -252,52 +259,10 @@ export default function RoomDetails() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <nav className="bg-white shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">H</span>
-                </div>
-                <span className="text-xl font-bold text-gray-800">Hotel Paradise</span>
-              </Link>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Link href="/rooms" className="text-gray-700 hover:text-blue-600 font-medium">
-                All Rooms
-              </Link>
-              {user && (
-                <div className="flex items-center space-x-4">
-                  <span className="text-gray-700">{user.email.split('@')[0]}</span>
-                  <Link 
-                    href={user.isAdmin ? "/admin/dashboard" : "/dashboard"}
-                    className="btn-primary"
-                  >
-                    {user.isAdmin ? 'Admin' : 'My Bookings'}
-                  </Link>
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem('token');
-                      router.push('/');
-                    }}
-                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
-
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6">
           <Link href="/rooms" className="text-blue-600 hover:text-blue-800 font-medium">
-            ← Back to Rooms
+            ← {t("backToRooms")}
           </Link>
         </div>
 
@@ -306,14 +271,14 @@ export default function RoomDetails() {
           <div className="space-y-4">
             <div className="relative overflow-hidden rounded-xl">
               {room.images && room.images.length > 0 ? (
-                <Image 
-                  src={room.images[0]} 
+                <img 
+                  src={room.images[selectedImage] || room.images[0]} 
                   alt={room.name} 
-                  width={600}
-                  height={400}
                   className="w-full h-96 object-cover" 
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800';
+                  }}
                 />
-                
               ) : (
                 <div className="w-full h-96 bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl flex items-center justify-center">
                   <span className="text-gray-500 text-lg">No Image Available</span>
@@ -323,16 +288,23 @@ export default function RoomDetails() {
             
             {room.images && room.images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
-                {room.images.slice(1, 5).map((image) => (
-                  <div key={`${room.id}-image-${image}`} className="relative overflow-hidden rounded-lg">
-                    <Image
+                {room.images.slice(0, 4).map((image, index) => (
+                  <button
+                    key={`${room.id}-image-${index}`}
+                    onClick={() => setSelectedImage(index)}
+                    className={`relative overflow-hidden rounded-lg border-2 transition-all ${
+                      selectedImage === index ? 'border-blue-600' : 'border-transparent hover:border-gray-300'
+                    }`}
+                  >
+                    <img
                       src={image} 
-                      alt={`${room.name} additional view`} 
-                      width={150}
-                      height={100}
-                      className="w-full h-20 object-cover cursor-pointer hover:opacity-75 transition-opacity" 
+                      alt={`${room.name} view ${index + 1}`} 
+                      className="w-full h-20 object-cover" 
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=200';
+                      }}
                     />
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
@@ -363,11 +335,11 @@ export default function RoomDetails() {
 
             <div className="space-y-6">
               <div className="card p-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800">Room Details</h3>
+                <h3 className="text-xl font-semibold mb-4 text-gray-800">{t("details")}</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center space-x-2">
                     <span className="text-gray-500">👥</span>
-                    <span className="font-medium">{room.capacity} guests</span>
+                    <span className="font-medium">{room.capacity} {room.capacity === 1 ? t("guest") : t("guests")}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className="text-gray-500">🛏️</span>
@@ -383,19 +355,23 @@ export default function RoomDetails() {
               </div>
 
               <div className="card p-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800">Amenities</h3>
+                <h3 className="text-xl font-semibold mb-4 text-gray-800">{t("amenities")}</h3>
                 <div className="flex flex-wrap gap-2">
-                  {room.amenities.map(amenity => (
-                    <span key={amenity} className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
-                      {amenity}
-                    </span>
-                  ))}
+                  {room.amenities && room.amenities.length > 0 ? (
+                    room.amenities.map(amenity => (
+                      <span key={amenity} className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+                        {amenity}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-500 text-sm">No amenities listed</span>
+                  )}
                 </div>
               </div>
 
               <div className="card p-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800">Description</h3>
-                <p className="text-gray-700 leading-relaxed">{room.description}</p>
+                <h3 className="text-xl font-semibold mb-4 text-gray-800">{t("description")}</h3>
+                <p className="text-gray-700 leading-relaxed">{room.description || t("description")}</p>
               </div>
             </div>
 
@@ -405,7 +381,7 @@ export default function RoomDetails() {
                   onClick={() => setShowBookingForm(true)}
                   className="w-full btn-primary text-lg py-4"
                 >
-                  Book This Room
+                  {t("bookNow")}
                 </button>
               ) : (
                 <div className="text-center">
@@ -425,7 +401,7 @@ export default function RoomDetails() {
         {/* Reviews Section */}
         <div className="card p-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-3xl font-bold text-gray-800">Reviews ({room.reviewCount})</h2>
+            <h2 className="text-3xl font-bold text-gray-800">Reviews ({room.reviewCount || 0})</h2>
             {user && (
               <button
                 onClick={() => setShowReviewForm(true)}
@@ -480,12 +456,12 @@ export default function RoomDetails() {
       {showBookingForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl p-8 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-2xl font-bold mb-6 text-gray-800">Book This Room</h3>
+            <h3 className="text-2xl font-bold mb-6 text-gray-800">{t("reservationDetails")}</h3>
             
             <form onSubmit={handleBooking} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="checkin-date" className="block text-sm font-medium mb-2 text-gray-700">Check-in Date</label>
+                  <label htmlFor="checkin-date" className="block text-sm font-medium mb-2 text-gray-700">{t("checkInDate")}</label>
                   <input
                     id="checkin-date"
                     type="date"
@@ -498,7 +474,7 @@ export default function RoomDetails() {
                 </div>
                 
                 <div>
-                  <label htmlFor="checkout-date" className="block text-sm font-medium mb-2 text-gray-700">Check-out Date</label>
+                  <label htmlFor="checkout-date" className="block text-sm font-medium mb-2 text-gray-700">{t("checkOutDate")}</label>
                   <input
                     id="checkout-date"
                     type="date"
@@ -512,7 +488,7 @@ export default function RoomDetails() {
               </div>
               
               <div>
-                <label htmlFor="user-name" className="block text-sm font-medium mb-2 text-gray-700">Full Name</label>
+                <label htmlFor="user-name" className="block text-sm font-medium mb-2 text-gray-700">{t("fullName")}</label>
                   <input
                     id="user-name"
                     type="text"
@@ -524,7 +500,7 @@ export default function RoomDetails() {
               </div>
               
               <div>
-                <label htmlFor="user-email" className="block text-sm font-medium mb-2 text-gray-700">Email</label>
+                <label htmlFor="user-email" className="block text-sm font-medium mb-2 text-gray-700">{t("email")}</label>
                   <input
                     id="user-email"
                     type="email"
@@ -536,25 +512,25 @@ export default function RoomDetails() {
               </div>
               
               <div>
-                <label htmlFor="special-requests" className="block text-sm font-medium mb-2 text-gray-700">Special Requests (Optional)</label>
+                <label htmlFor="special-requests" className="block text-sm font-medium mb-2 text-gray-700">{t("specialRequests")} (Optional)</label>
                   <textarea
                     id="special-requests"
                     value={bookingForm.specialRequests}
                     onChange={(e) => setBookingForm(prev => ({ ...prev, specialRequests: e.target.value }))}
                     rows={3}
                     className="input-field"
-                    placeholder="Any special requests or preferences..."
+                    placeholder={t("messagePlaceholder")}
                   />
               </div>
 
-              {bookingForm.checkIn && bookingForm.checkOut && (
+              {bookingForm.checkIn && bookingForm.checkOut && room && (
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium text-gray-800">Total Price:</span>
+                    <span className="font-medium text-gray-800">{t("totalPrice")}:</span>
                     <span className="text-2xl font-bold text-blue-600">${calculateTotalPrice()}</span>
                   </div>
                   <p className="text-sm text-gray-600 mt-1">
-                    {Math.ceil((new Date(bookingForm.checkOut).getTime() - new Date(bookingForm.checkIn).getTime()) / (1000 * 60 * 60 * 24))} nights × ${room.price}/night
+                    {Math.ceil((new Date(bookingForm.checkOut).getTime() - new Date(bookingForm.checkIn).getTime()) / (1000 * 60 * 60 * 24))} nights × ${room.price}/{t("perNight")}
                   </p>
                 </div>
               )}
@@ -564,14 +540,14 @@ export default function RoomDetails() {
                   type="submit"
                   className="flex-1 btn-primary"
                 >
-                  Proceed to Payment
+                  {t("proceedToPayment")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowBookingForm(false)}
                   className="flex-1 btn-secondary"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
               </div>
             </form>
