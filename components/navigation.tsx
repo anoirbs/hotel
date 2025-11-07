@@ -10,32 +10,32 @@ export default function Navigation() {
   const { t } = useLanguage()
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <nav className="sticky top-0 z-50 bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">H</span>
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-lg">H</span>
             </div>
-            <span className="font-bold text-lg text-gray-800 hidden sm:inline">Hotel Paradise</span>
+            <span className="font-bold text-lg text-foreground hidden sm:inline">Hotel Paradise</span>
           </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex gap-8 items-center">
-            <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/" className="text-foreground hover:text-primary transition-colors">
               {t("home")}
             </Link>
-            <Link href="/rooms" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/rooms" className="text-foreground hover:text-primary transition-colors">
               {t("rooms")}
             </Link>
             <Link
               href="/weddings"
-              className="text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
+              className="text-foreground hover:text-primary transition-colors flex items-center gap-1"
             >
               <span>{t("weddings")}</span>
               <span className="text-sm">👰💕🤵</span>
             </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/contact" className="text-foreground hover:text-primary transition-colors">
               {t("contact")}
             </Link>
             <LanguageSwitcher />
@@ -43,7 +43,7 @@ export default function Navigation() {
 
           {/* Mobile Menu Button */}
           <button 
-            className="md:hidden text-gray-700" 
+            className="md:hidden text-foreground" 
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Toggle menu"
           >
@@ -62,23 +62,23 @@ export default function Navigation() {
         {/* Mobile Menu */}
         {isOpen && (
           <div className="md:hidden pb-4 flex flex-col gap-4">
-            <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/" className="text-foreground hover:text-primary transition-colors">
               {t("home")}
             </Link>
-            <Link href="/rooms" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/rooms" className="text-foreground hover:text-primary transition-colors">
               {t("rooms")}
             </Link>
             <Link
               href="/weddings"
-              className="text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
+              className="text-foreground hover:text-primary transition-colors flex items-center gap-1"
             >
               <span>{t("weddings")}</span>
               <span className="text-sm">👰💕🤵</span>
             </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/contact" className="text-foreground hover:text-primary transition-colors">
               {t("contact")}
             </Link>
-            <div className="pt-2 border-t border-gray-200">
+            <div className="pt-2 border-t border-border">
               <LanguageSwitcher />
             </div>
           </div>

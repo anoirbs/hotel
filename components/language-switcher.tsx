@@ -11,8 +11,8 @@ export default function LanguageSwitcher() {
         onClick={() => setLanguage("en")}
         className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
           language === "en"
-            ? "bg-blue-600 text-white"
-            : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            ? "bg-primary text-primary-foreground"
+            : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
         }`}
       >
         EN
@@ -21,8 +21,8 @@ export default function LanguageSwitcher() {
         onClick={() => setLanguage("it")}
         className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
           language === "it"
-            ? "bg-blue-600 text-white"
-            : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            ? "bg-primary text-primary-foreground"
+            : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
         }`}
       >
         IT

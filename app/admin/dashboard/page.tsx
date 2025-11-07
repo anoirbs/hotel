@@ -195,12 +195,21 @@ const roomSchema = z.object({
 });
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'analytics' | 'rooms' | 'bookings' | 'users' | 'invoices'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'rooms' | 'bookings' | 'weddings' | 'users' | 'invoices'>('analytics');
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<Array<{ id: string; email: string; isAdmin: boolean; firstName?: string | null; lastName?: string | null; createdAt: string }>>([]);
+  const [weddingInquiries, setWeddingInquiries] = useState<Array<{
+    id: string;
+    name: string;
+    email: string;
+    meetingDate: string;
+    guests: string;
+    requests?: string;
+    createdAt: string;
+  }>>([]);
   const [newRoom, setNewRoom] = useState({
     name: '',
     type: '',
@@ -247,6 +256,8 @@ export default function AdminDashboard() {
     if (!token) return;
     if (activeTab === 'users') {
       fetchUsers();
+    } else if (activeTab === 'weddings') {
+      fetchWeddingInquiries();
     }
   }, [activeTab, token]);
 
@@ -277,6 +288,41 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error loading users:', error);
+    }
+  };
+
+  const fetchWeddingInquiries = async () => {
+    try {
+      const res = await fetch('/api/weddings', { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) {
+        const data = await res.json();
+        setWeddingInquiries(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Error loading wedding inquiries:', error);
+      setWeddingInquiries([]);
+    }
+  };
+
+  const handleDeleteWeddingInquiry = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this wedding inquiry?')) return;
+
+    try {
+      const response = await fetch(`/api/weddings/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        alert('Wedding inquiry deleted successfully');
+        fetchWeddingInquiries();
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Error deleting inquiry');
+      }
+    } catch (error) {
+      console.error('Error deleting wedding inquiry:', error);
+      alert('Error deleting inquiry');
     }
   };
 
@@ -567,16 +613,29 @@ export default function AdminDashboard() {
     );
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    router.push('/admin-login');
+  };
+
   return (
     <main className="p-8 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <button
-          onClick={() => router.push('/')}
-          className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-        >
-          Back to Site
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => router.push('/')}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            Back to Site
+          </button>
+          <button
+            onClick={handleLogout}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Tab Navigation */}
@@ -586,6 +645,7 @@ export default function AdminDashboard() {
             { id: 'analytics' as const, label: 'Analytics' },
             { id: 'rooms' as const, label: 'Room Management' },
             { id: 'bookings' as const, label: 'Bookings' },
+            { id: 'weddings' as const, label: 'Wedding Inquiries' },
             { id: 'users' as const, label: 'Users' },
             { id: 'invoices' as const, label: 'Invoices' },
           ] as const).map(tab => (
@@ -806,6 +866,62 @@ export default function AdminDashboard() {
                 </li>
               ))}
             </ul>
+          </div>
+        </div>
+      )}
+
+      {/* Weddings Tab */}
+      {activeTab === 'weddings' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Wedding Inquiries</h2>
+            <button onClick={fetchWeddingInquiries} className="bg-gray-100 px-3 py-2 rounded border hover:bg-gray-200">
+              Refresh
+            </button>
+          </div>
+          
+          <div className="bg-white shadow overflow-hidden sm:rounded-md">
+            {weddingInquiries.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <p>No wedding inquiries yet.</p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-200">
+                {weddingInquiries.map((inquiry) => (
+                  <li key={inquiry.id} className="px-6 py-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-gray-900">{inquiry.name}</p>
+                        <span className="text-xs text-gray-500">
+                          {new Date(inquiry.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex items-center text-sm text-gray-500">
+                        <p><strong>Email:</strong> {inquiry.email}</p>
+                      </div>
+                      <div className="mt-1 flex items-center text-sm text-gray-500">
+                        <p><strong>Meeting Date:</strong> {new Date(inquiry.meetingDate).toLocaleDateString()}</p>
+                        <span className="mx-2">•</span>
+                        <p><strong>Guests:</strong> {inquiry.guests}</p>
+                      </div>
+                      {inquiry.requests && (
+                        <p className="mt-1 text-sm text-gray-600 italic">&ldquo;{inquiry.requests}&rdquo;</p>
+                      )}
+                    </div>
+                    <div className="ml-4">
+                      <button
+                        onClick={() => handleDeleteWeddingInquiry(inquiry.id)}
+                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       )}

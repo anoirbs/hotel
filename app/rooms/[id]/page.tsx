@@ -243,63 +243,69 @@ export default function RoomDetails() {
 
   if (!room) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <main className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">{t("roomNotFound")}</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-4">{t("roomNotFound")}</h1>
           <Link
             href="/rooms"
-            className="btn-primary"
+            className="text-primary hover:underline"
           >
             {t("backToRooms")}
           </Link>
         </div>
-      </div>
+      </main>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link href="/rooms" className="text-blue-600 hover:text-blue-800 font-medium">
-            ← {t("backToRooms")}
-          </Link>
-        </div>
+  // Simple SVG Icon
+  const ChevronLeft = ({ size = 20 }: { size?: number }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+  )
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Room Images */}
-          <div className="space-y-4">
-            <div className="relative overflow-hidden rounded-xl">
-              {room.images && room.images.length > 0 ? (
-                <img 
-                  src={room.images[selectedImage] || room.images[0]} 
-                  alt={room.name} 
-                  className="w-full h-96 object-cover" 
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800';
-                  }}
-                />
-              ) : (
-                <div className="w-full h-96 bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl flex items-center justify-center">
-                  <span className="text-gray-500 text-lg">No Image Available</span>
-                </div>
-              )}
+  return (
+    <main className="min-h-screen bg-background">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Back Button */}
+        <Link
+          href="/rooms"
+          className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors mb-8"
+        >
+          <ChevronLeft size={20} />
+          {t("backToRooms")}
+        </Link>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Image Gallery */}
+          <div className="lg:col-span-2">
+            {/* Main Image */}
+            <div className="relative h-96 md:h-[500px] rounded-lg overflow-hidden mb-4 bg-secondary/20">
+              <img
+                src={room.images?.[selectedImage] || room.images?.[0] || "/placeholder.svg"}
+                alt={room.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800';
+                }}
+              />
             </div>
-            
+
+            {/* Thumbnail Gallery */}
             {room.images && room.images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
                 {room.images.slice(0, 4).map((image, index) => (
                   <button
-                    key={`${room.id}-image-${index}`}
+                    key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`relative overflow-hidden rounded-lg border-2 transition-all ${
-                      selectedImage === index ? 'border-blue-600' : 'border-transparent hover:border-gray-300'
+                    className={`relative h-24 rounded-lg overflow-hidden border-2 transition-all ${
+                      selectedImage === index ? "border-primary" : "border-border hover:border-primary/50"
                     }`}
                   >
                     <img
-                      src={image} 
-                      alt={`${room.name} view ${index + 1}`} 
-                      className="w-full h-20 object-cover" 
+                      src={image || "/placeholder.svg"}
+                      alt={`${room.name} ${index + 1}`}
+                      className="w-full h-full object-cover"
                       onError={(e) => {
                         e.currentTarget.src = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=200';
                       }}
@@ -310,85 +316,39 @@ export default function RoomDetails() {
             )}
           </div>
 
-          {/* Room Details */}
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-800 mb-2">{room.name}</h1>
-              <p className="text-xl text-gray-600 mb-4">{room.type}</p>
-              
-              {room.reviewCount > 0 && (
-                <div className="flex items-center mb-4">
-                  <div className="flex text-yellow-400 mr-2">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <span key={`star-${i}`} className={i < Math.round(room.averageRating) ? 'text-yellow-400' : 'text-gray-300'}>
-                        ★
-                      </span>
-                    ))}
-                  </div>
-                  <span className="text-lg font-semibold">{room.averageRating.toFixed(1)}</span>
-                  <span className="text-gray-600 ml-2">({room.reviewCount} reviews)</span>
+          {/* Quick Info Card */}
+          <div className="lg:col-span-1">
+            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg border border-border p-6 sticky top-24">
+              <h3 className="text-lg font-bold text-foreground mb-4">{t("quickInfo")}</h3>
+              <div className="space-y-3 mb-6">
+                <div>
+                  <p className="text-sm text-foreground/60">{t("roomType")}</p>
+                  <p className="font-semibold text-foreground">{room.name}</p>
                 </div>
-              )}
-              
-              <div className="text-4xl font-bold text-blue-600 mb-4">${room.price}/night</div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="card p-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800">{t("details")}</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-gray-500">👥</span>
-                    <span className="font-medium">{room.capacity} {room.capacity === 1 ? t("guest") : t("guests")}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-gray-500">🛏️</span>
-                    <span className="font-medium">{room.bedType}</span>
-                  </div>
-                  {room.size && (
-                    <div className="col-span-2 flex items-center space-x-2">
-                      <span className="text-gray-500">📐</span>
-                      <span className="font-medium">{room.size} sq ft</span>
-                    </div>
-                  )}
+                <div>
+                  <p className="text-sm text-foreground/60">{t("capacity")}</p>
+                  <p className="font-semibold text-foreground">
+                    {room.capacity} {room.capacity === 1 ? t("guest") : t("guests")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-foreground/60">{t("pricePerNight")}</p>
+                  <p className="font-semibold text-foreground text-lg">${room.price}</p>
                 </div>
               </div>
-
-              <div className="card p-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800">{t("amenities")}</h3>
-                <div className="flex flex-wrap gap-2">
-                  {room.amenities && room.amenities.length > 0 ? (
-                    room.amenities.map(amenity => (
-                      <span key={amenity} className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
-                        {amenity}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-gray-500 text-sm">No amenities listed</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="card p-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800">{t("description")}</h3>
-                <p className="text-gray-700 leading-relaxed">{room.description || t("description")}</p>
-              </div>
-            </div>
-
-            <div className="card p-6">
               {user ? (
                 <button
                   onClick={() => setShowBookingForm(true)}
-                  className="w-full btn-primary text-lg py-4"
+                  className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
                 >
                   {t("bookNow")}
                 </button>
               ) : (
                 <div className="text-center">
-                  <p className="text-gray-600 mb-4">Please log in to book this room</p>
+                  <p className="text-foreground/70 mb-4 text-sm">Please log in to book this room</p>
                   <Link 
                     href="/login"
-                    className="btn-primary"
+                    className="w-full block bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors text-center"
                   >
                     Log In
                   </Link>
@@ -396,16 +356,42 @@ export default function RoomDetails() {
               )}
             </div>
           </div>
+
+          {/* Room Description and Amenities */}
+          <div className="lg:col-span-2">
+            {/* Description */}
+            <div className="mb-12">
+              <h2 className="text-2xl font-bold text-foreground mb-4">{t("description")}</h2>
+              <p className="text-foreground/70 leading-relaxed mb-4">{room.description}</p>
+            </div>
+
+            {/* Amenities */}
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-4">{t("amenities")}</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {room.amenities && room.amenities.length > 0 ? (
+                  room.amenities.map((amenity, index) => (
+                    <div key={index} className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
+                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                      <span className="text-card-foreground">{amenity}</span>
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-foreground/60 text-sm">No amenities listed</span>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Reviews Section */}
-        <div className="card p-8">
+        <div className="mt-12 bg-card rounded-lg border border-border p-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-3xl font-bold text-gray-800">Reviews ({room.reviewCount || 0})</h2>
+            <h2 className="text-3xl font-bold text-card-foreground">Reviews ({room.reviewCount || 0})</h2>
             {user && (
               <button
                 onClick={() => setShowReviewForm(true)}
-                className="btn-primary"
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
               >
                 Write Review
               </button>
@@ -414,17 +400,17 @@ export default function RoomDetails() {
 
           {reviews.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-gray-400 text-6xl mb-4">⭐</div>
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">No reviews yet</h3>
-              <p className="text-gray-500">Be the first to review this room!</p>
+              <div className="text-foreground/40 text-6xl mb-4">⭐</div>
+              <h3 className="text-xl font-semibold text-foreground/70 mb-2">No reviews yet</h3>
+              <p className="text-foreground/60">Be the first to review this room!</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {reviews.map((review) => (
-                <div key={review.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                <div key={review.id} className="border border-border rounded-lg p-6 hover:shadow-md transition-shadow bg-background">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h4 className="font-semibold text-gray-800">
+                      <h4 className="font-semibold text-foreground">
                         {review.user.firstName && review.user.lastName 
                           ? `${review.user.firstName} ${review.user.lastName}`
                           : 'Anonymous User'
@@ -432,36 +418,36 @@ export default function RoomDetails() {
                       </h4>
                       <div className="flex text-yellow-400">
                         {Array.from({ length: 5 }, (_, i) => (
-                          <span key={`review-star-${i}`} className={i < review.rating ? 'text-yellow-400' : 'text-gray-300'}>
+                          <span key={`review-star-${i}`} className={i < review.rating ? 'text-yellow-400' : 'text-foreground/30'}>
                             ★
                           </span>
                         ))}
                       </div>
                     </div>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-foreground/60">
                       {new Date(review.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                   {review.comment && (
-                    <p className="text-gray-700">{review.comment}</p>
+                    <p className="text-foreground/80">{review.comment}</p>
                   )}
                 </div>
               ))}
             </div>
           )}
         </div>
-      </main>
+      </div>
 
       {/* Booking Form Modal */}
       {showBookingForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-8 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-2xl font-bold mb-6 text-gray-800">{t("reservationDetails")}</h3>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-card rounded-xl p-8 w-full max-w-md max-h-[90vh] overflow-y-auto border border-border">
+            <h3 className="text-2xl font-bold mb-6 text-card-foreground">{t("reservationDetails")}</h3>
             
             <form onSubmit={handleBooking} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="checkin-date" className="block text-sm font-medium mb-2 text-gray-700">{t("checkInDate")}</label>
+                  <label htmlFor="checkin-date" className="block text-sm font-medium mb-2 text-card-foreground">{t("checkInDate")}</label>
                   <input
                     id="checkin-date"
                     type="date"
@@ -474,7 +460,7 @@ export default function RoomDetails() {
                 </div>
                 
                 <div>
-                  <label htmlFor="checkout-date" className="block text-sm font-medium mb-2 text-gray-700">{t("checkOutDate")}</label>
+                  <label htmlFor="checkout-date" className="block text-sm font-medium mb-2 text-card-foreground">{t("checkOutDate")}</label>
                   <input
                     id="checkout-date"
                     type="date"
@@ -488,7 +474,7 @@ export default function RoomDetails() {
               </div>
               
               <div>
-                <label htmlFor="user-name" className="block text-sm font-medium mb-2 text-gray-700">{t("fullName")}</label>
+                <label htmlFor="user-name" className="block text-sm font-medium mb-2 text-card-foreground">{t("fullName")}</label>
                   <input
                     id="user-name"
                     type="text"
@@ -500,7 +486,7 @@ export default function RoomDetails() {
               </div>
               
               <div>
-                <label htmlFor="user-email" className="block text-sm font-medium mb-2 text-gray-700">{t("email")}</label>
+                <label htmlFor="user-email" className="block text-sm font-medium mb-2 text-card-foreground">{t("email")}</label>
                   <input
                     id="user-email"
                     type="email"
@@ -512,7 +498,7 @@ export default function RoomDetails() {
               </div>
               
               <div>
-                <label htmlFor="special-requests" className="block text-sm font-medium mb-2 text-gray-700">{t("specialRequests")} (Optional)</label>
+                <label htmlFor="special-requests" className="block text-sm font-medium mb-2 text-card-foreground">{t("specialRequests")} (Optional)</label>
                   <textarea
                     id="special-requests"
                     value={bookingForm.specialRequests}
@@ -524,12 +510,12 @@ export default function RoomDetails() {
               </div>
 
               {bookingForm.checkIn && bookingForm.checkOut && room && (
-                <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="bg-secondary/20 p-4 rounded-lg">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium text-gray-800">{t("totalPrice")}:</span>
-                    <span className="text-2xl font-bold text-blue-600">${calculateTotalPrice()}</span>
+                    <span className="font-medium text-card-foreground">{t("totalPrice")}:</span>
+                    <span className="text-2xl font-bold text-primary">${calculateTotalPrice()}</span>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-card-foreground/70 mt-1">
                     {Math.ceil((new Date(bookingForm.checkOut).getTime() - new Date(bookingForm.checkIn).getTime()) / (1000 * 60 * 60 * 24))} nights × ${room.price}/{t("perNight")}
                   </p>
                 </div>
@@ -538,14 +524,14 @@ export default function RoomDetails() {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 btn-primary"
+                  className="flex-1 bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
                 >
                   {t("proceedToPayment")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowBookingForm(false)}
-                  className="flex-1 btn-secondary"
+                  className="flex-1 bg-secondary text-secondary-foreground py-3 rounded-lg font-semibold hover:bg-secondary/80 transition-colors"
                 >
                   {t("cancel")}
                 </button>
@@ -557,13 +543,13 @@ export default function RoomDetails() {
 
       {/* Review Form Modal */}
       {showReviewForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-8 w-full max-w-md">
-            <h3 className="text-2xl font-bold mb-6 text-gray-800">Write a Review</h3>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-card rounded-xl p-8 w-full max-w-md border border-border">
+            <h3 className="text-2xl font-bold mb-6 text-card-foreground">Write a Review</h3>
             
             <form onSubmit={handleSubmitReview} className="space-y-4">
               <div>
-                <label htmlFor="review-rating" className="block text-sm font-medium mb-2 text-gray-700">Rating</label>
+                <label htmlFor="review-rating" className="block text-sm font-medium mb-2 text-card-foreground">Rating</label>
                 <div className="flex space-x-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -571,7 +557,7 @@ export default function RoomDetails() {
                       type="button"
                       onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))}
                       className={`text-3xl transition-colors ${
-                        star <= reviewForm.rating ? 'text-yellow-400' : 'text-gray-300'
+                        star <= reviewForm.rating ? 'text-yellow-400' : 'text-foreground/30'
                       }`}
                     >
                       ★
@@ -581,7 +567,7 @@ export default function RoomDetails() {
               </div>
               
               <div>
-                <label htmlFor="review-comment" className="block text-sm font-medium mb-2 text-gray-700">Comment (Optional)</label>
+                <label htmlFor="review-comment" className="block text-sm font-medium mb-2 text-card-foreground">Comment (Optional)</label>
                   <textarea
                     id="review-comment"
                     value={reviewForm.comment}
@@ -595,16 +581,16 @@ export default function RoomDetails() {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 btn-primary"
+                  className="flex-1 bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
                 >
                   Submit Review
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowReviewForm(false)}
-                  className="flex-1 btn-secondary"
+                  className="flex-1 bg-secondary text-secondary-foreground py-3 rounded-lg font-semibold hover:bg-secondary/80 transition-colors"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
               </div>
             </form>
@@ -633,6 +619,6 @@ export default function RoomDetails() {
           stripePublishableKey={typeof window !== 'undefined' ? localStorage.getItem('stripe_publishable_key') : null}
         />
       )}
-    </div>
+    </main>
   );
 }
