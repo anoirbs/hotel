@@ -3,13 +3,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getImage } from '@/lib/gridfs';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
+    
     // Validate ObjectId
-    if (!ObjectId.isValid(params.id)) {
+    if (!id || !ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid image ID' }, { status: 400 });
     }
-    const stream = await getImage(params.id);
+    const stream = await getImage(id);
     const chunks: Buffer[] = [];
     return new Promise<NextResponse>((resolve) => {
       stream.on('data', (chunk) => chunks.push(chunk));

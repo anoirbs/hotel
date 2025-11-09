@@ -62,14 +62,18 @@ export default function WeddingContactPage() {
       })
 
       if (response.ok) {
+        const result = await response.json()
         setSubmitted(true)
         setTimeout(() => {
           setFormData({ name: "", email: "", meetingDate: "", guests: "", requests: "" })
           setSubmitted(false)
         }, 3000)
       } else {
-        const error = await response.json()
-        alert(error.error || 'Failed to submit inquiry. Please try again.')
+        const errorData = await response.json().catch(() => ({ error: 'Failed to submit inquiry' }))
+        const errorMessage = Array.isArray(errorData.error) 
+          ? errorData.error.map((e: any) => e.message || e).join(', ')
+          : errorData.error || errorData.message || 'Failed to submit inquiry. Please try again.'
+        alert(errorMessage)
       }
     } catch (error) {
       console.error('Error submitting inquiry:', error)

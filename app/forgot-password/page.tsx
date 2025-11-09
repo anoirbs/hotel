@@ -1,21 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { z } from 'zod';
 
-const loginSchema = z.object({
+const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
 });
 
-export default function Login() {
+export default function ForgotPassword() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,31 +20,21 @@ export default function Login() {
     setErrors({});
     
     try {
-      loginSchema.parse({ email, password });
-      const res = await fetch('/api/auth/login', {
+      forgotPasswordSchema.parse({ email });
+      const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email }),
       });
       
       if (res.ok) {
-        const { token, isAdmin } = await res.json();
-        localStorage.setItem('token', token);
-        
-        // Dispatch event to update navigation
-        window.dispatchEvent(new Event('auth-change'));
-        
-        if (isAdmin) {
-          router.push('/admin/dashboard');
-        } else {
-          router.push('/rooms');
-        }
+        setSubmitted(true);
       } else {
         const { error } = await res.json();
         if (Array.isArray(error)) {
-          alert(error.map((e: any) => e.message).join(', ') || 'Invalid credentials');
+          setErrors({ email: error.map((e: any) => e.message).join(', ') });
         } else {
-          alert(error || 'Invalid credentials');
+          setErrors({ email: error || 'An error occurred. Please try again.' });
         }
       }
     } catch (error) {
@@ -60,12 +47,52 @@ export default function Login() {
           }, {} as { [key: string]: string })
         );
       } else {
-        alert('An error occurred. Please try again.');
+        setErrors({ email: 'An error occurred. Please try again.' });
       }
     } finally {
       setLoading(false);
     }
   };
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Check Your Email</h2>
+            <p className="text-gray-600 mb-6">
+              If an account with that email exists, we have sent a password reset link to <strong>{email}</strong>.
+            </p>
+            <p className="text-sm text-gray-500 mb-6">
+              Please check your inbox and click the link to reset your password. The link will expire in 1 hour.
+            </p>
+            <div className="space-y-3">
+              <Link 
+                href="/login" 
+                className="block w-full btn-primary text-center py-3"
+              >
+                Back to Login
+              </Link>
+              <button
+                onClick={() => {
+                  setSubmitted(false);
+                  setEmail('');
+                }}
+                className="block w-full text-gray-600 hover:text-gray-800 text-sm"
+              >
+                Send another email
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -78,11 +105,11 @@ export default function Login() {
             </div>
             <span className="text-2xl font-bold text-gray-800">Hotel Paradise</span>
           </Link>
-          <h2 className="text-3xl font-bold text-gray-800">Welcome Back</h2>
-          <p className="mt-2 text-gray-600">Sign in to your account</p>
+          <h2 className="text-3xl font-bold text-gray-800">Forgot Password</h2>
+          <p className="mt-2 text-gray-600">Enter your email to receive a password reset link</p>
         </div>
 
-        {/* Login Form */}
+        {/* Form */}
         <div className="bg-white rounded-xl shadow-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -100,58 +127,24 @@ export default function Login() {
               />
               {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
             </div>
-            
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <Link 
-                  href="/forgot-password" 
-                  className="text-sm text-blue-600 hover:text-blue-800 font-semibold"
-                >
-                  Forgot Password?
-                </Link>
-              </div>
-              <input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={`input-field ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
-                required
-              />
-              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-            </div>
 
             <button 
               type="submit" 
               disabled={loading}
               className="w-full btn-primary text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing In...' : 'Sign In'}
+              {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Don't have an account?{' '}
-              <Link href="/signup" className="text-blue-600 hover:text-blue-800 font-semibold">
-                Sign up here
-              </Link>
-            </p>
-          </div>
-
-          <div className="mt-4 text-center">
-            <Link href="/admin-login" className="text-sm text-gray-500 hover:text-gray-700">
-              Admin Login
+            <Link href="/login" className="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+              Back to Login
             </Link>
           </div>
         </div>
-
-
       </div>
     </div>
   );
 }
+

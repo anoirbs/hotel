@@ -102,7 +102,15 @@ JWT_SECRET="your-super-secret-jwt-key"
 
 # Stripe Payment Processing
 STRIPE_SECRET_KEY="sk_test_your_stripe_secret_key"
-STRIPE_PUBLISHABLE_KEY="pk_test_your_stripe_publishable_key"
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_your_stripe_publishable_key"
+
+# SMTP Email Configuration (for email verification)
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASSWORD="your-app-password"
+SMTP_FROM="Hotel Paradise <noreply@hotelparadise.com>"
 
 # Application Settings
 NODE_ENV="development"
@@ -115,6 +123,37 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 2. Get your API keys from the Stripe dashboard
 3. Add them to your `.env.local` file
 4. Configure webhook endpoints for payment confirmation
+
+### SMTP Email Setup
+
+The application uses Nodemailer for sending verification emails. Configure SMTP settings in your `.env.local` file.
+
+#### Gmail Setup (Recommended for Development)
+
+1. **Enable 2-Factor Authentication** on your Gmail account
+2. **Generate an App Password**:
+   - Go to Google Account → Security → 2-Step Verification → App passwords
+   - Create a new app password for "Mail"
+   - Copy the generated password
+3. **Add to `.env.local`**:
+   ```env
+   SMTP_HOST="smtp.gmail.com"
+   SMTP_PORT="587"
+   SMTP_SECURE="false"
+   SMTP_USER="your-email@gmail.com"
+   SMTP_PASSWORD="your-app-password-here"
+   SMTP_FROM="Hotel Paradise <your-email@gmail.com>"
+   ```
+
+#### Other SMTP Providers
+
+For other providers (SendGrid, Mailgun, AWS SES, etc.), update the SMTP settings accordingly:
+
+- **SendGrid**: `smtp.sendgrid.net`, port `587`
+- **Mailgun**: `smtp.mailgun.org`, port `587`
+- **AWS SES**: `email-smtp.region.amazonaws.com`, port `587`
+
+**Note**: If SMTP is not configured, the application will log verification URLs to the console in development mode.
 
 ## 📱 Usage
 
@@ -318,7 +357,7 @@ For support and questions:
 
 ## 🎯 Roadmap
 
-- [ ] Email notifications
+- [x] Email notifications (SMTP configured)
 - [ ] Mobile app
 - [ ] Multi-language support
 - [ ] Advanced analytics

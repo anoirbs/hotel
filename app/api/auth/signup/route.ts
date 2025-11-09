@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { generateToken } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { sendVerificationEmail } from '@/lib/email';
 import { z } from 'zod';
 
 const signupSchema = z.object({
@@ -14,19 +15,6 @@ const signupSchema = z.object({
 
 function generateVerificationToken(): string {
   return require('crypto').randomBytes(32).toString('hex');
-}
-
-async function sendVerificationEmail(email: string, token: string, origin: string) {
-  // In production, use a service like SendGrid, Nodemailer, etc.
-  // For now, we'll log it and return the verification URL
-  const verificationUrl = `${origin}/api/auth/verify-email?token=${token}`;
-  
-  console.log('Verification email would be sent to:', email);
-  console.log('Verification URL:', verificationUrl);
-  
-  // TODO: Implement actual email sending
-  // Example with nodemailer or SendGrid would go here
-  return verificationUrl;
 }
 
 export async function POST(req: NextRequest) {

@@ -1,45 +1,51 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import { uploadImage } from '@/lib/gridfs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   try {
+    console.log('Seeding database...');
+
     const hashedAdminPassword = await bcrypt.hash('admin123', 10);
     const hashedUserPassword = await bcrypt.hash('user123', 10);
 
-    await prisma.user.upsert({
-      where: { email: 'admin@example.com' },
-      update: {},
-      create: {
+    // Delete existing demo users if they exist
+    await prisma.user.deleteMany({
+      where: {
+        email: {
+          in: ['admin@example.com', 'user@example.com'],
+        },
+      },
+    });
+    console.log('✓ Cleared existing demo users');
+
+    // Create admin user
+    const admin = await prisma.user.create({
+      data: {
         email: 'admin@example.com',
         password: hashedAdminPassword,
         isAdmin: true,
+        emailVerified: true,
+        verificationToken: 'admin-verified-token',
       },
     });
+    console.log('✓ Admin user created:', admin.email);
 
-    await prisma.user.upsert({
-      where: { email: 'user@example.com' },
-      update: {},
-      create: {
+    // Create regular user
+    const user = await prisma.user.create({
+      data: {
         email: 'user@example.com',
         password: hashedUserPassword,
         isAdmin: false,
+        emailVerified: true,
+        verificationToken: 'user-verified-token',
       },
     });
+    console.log('✓ Regular user created:', user.email);
 
-    // Sample image upload
+    // Sample image upload - skip for now
     let imageId: string | undefined;
-    try {
-      const imagePath = path.join(__dirname, 'sample-room.jpg');
-      const imageBuffer = await fs.readFile(imagePath);
-      imageId = await uploadImage(imageBuffer, 'sample-room.jpg');
-    } catch (error) {
-      console.warn('Sample image not found, skipping image upload:', error);
-    }
 
     await prisma.room.createMany({
       data: [

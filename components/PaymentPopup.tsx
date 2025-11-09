@@ -216,7 +216,7 @@ function PaymentForm({
         <div className="flex justify-between items-center mb-2">
           <span className="font-medium text-gray-700">Dates:</span>
           <span className="text-gray-900">
-            {new Date(checkIn).toLocaleDateString()} - {new Date(checkOut).toLocaleDateString()}
+            {new Date(bookingData.checkIn).toLocaleDateString()} - {new Date(bookingData.checkOut).toLocaleDateString()}
           </span>
         </div>
         <div className="flex justify-between items-center">

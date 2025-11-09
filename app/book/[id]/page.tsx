@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
 import { useParams, useRouter } from 'next/navigation';
 import { z } from 'zod';
 
@@ -42,17 +41,14 @@ export default function BookRoom() {
   const router = useRouter();
   const params = useParams() as { id: string };
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const stripeKey = typeof window !== 'undefined' ? localStorage.getItem('stripe_publishable_key') : null;
 
   useEffect(() => {
     if (!token) {
       router.push('/login');
-    } else if (!stripeKey) {
-      router.push('/stripe-config');
     } else {
       fetchRoom();
     }
-  }, [token, stripeKey, router]);
+  }, [token, router]);
 
   const fetchRoom = async () => {
     try {
@@ -123,11 +119,15 @@ export default function BookRoom() {
       });
 
       if (res.ok) {
-        const { sessionId } = await res.json();
-        const stripe = await loadStripe(stripeKey!);
-        if (stripe) {
-          await stripe.redirectToCheckout({ sessionId });
+        const { url } = await res.json();
+        
+        if (!url) {
+          alert('Failed to create checkout session. Please try again.');
+          return;
         }
+
+        // Redirect directly to the Stripe checkout URL
+        window.location.href = url;
       } else {
         const { error } = await res.json();
         alert(error || 'Error initiating payment');

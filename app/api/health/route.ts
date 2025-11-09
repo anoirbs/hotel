@@ -106,8 +106,14 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Basic health check
-    const health = {
+    // Basic health check - use a more flexible type
+    const health: {
+      status: string;
+      timestamp: string;
+      version: string;
+      environment: string;
+      database?: string;
+    } = {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       version: process.env.npm_package_version || '1.0.0',
@@ -115,13 +121,15 @@ export async function GET(req: NextRequest) {
     };
 
     // Database connectivity check
-    try {
-      await prisma.$queryRaw`SELECT 1`;
-      health.database = 'connected';
-    } catch (error) {
-      health.database = 'disconnected';
-      health.status = 'degraded';
-    }
+// Database connectivity check
+try {
+  // Simple query that works with all Prisma setups
+  await prisma.user.findFirst({ take: 1 });
+  health.database = 'connected';
+} catch (error) {
+  health.database = 'disconnected';
+  health.status = 'degraded';
+}
 
     const response = NextResponse.json(health);
     return addSecurityHeaders(response);
@@ -197,4 +205,3 @@ export async function POST(req: NextRequest) {
     return addSecurityHeaders(response);
   }
 }
-

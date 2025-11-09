@@ -41,29 +41,48 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Room type performance
-    const roomTypePerformance = await prisma.room.groupBy({
-      by: ['type'],
+    // Room type performance - Use separate query on bookings grouped by roomId
+    const bookingsByRoom = await prisma.booking.groupBy({
+      by: ['roomId'],
+      where: {
+        createdAt: { gte: startDate },
+        status: { not: 'cancelled' },
+      },
       _count: {
-        bookings: {
-          where: {
-            createdAt: { gte: startDate },
-            status: { not: 'cancelled' },
-          },
-        },
+        id: true,
       },
       _sum: {
-        bookings: {
-          where: {
-            createdAt: { gte: startDate },
-            status: { not: 'cancelled' },
-          },
-          _sum: {
-            totalPrice: true,
-          },
-        },
+        totalPrice: true,
       },
     });
+
+    // Get room types for the bookings
+    const roomIds = bookingsByRoom.map(b => b.roomId);
+    const rooms = await prisma.room.findMany({
+      where: { id: { in: roomIds } },
+      select: { id: true, type: true },
+    });
+
+    const roomTypeMap = new Map(rooms.map(r => [r.id, r.type]));
+    
+    // Aggregate by room type
+    const roomTypePerformanceMap = new Map<string, { bookings: number; revenue: number }>();
+    bookingsByRoom.forEach(booking => {
+      const roomType = roomTypeMap.get(booking.roomId);
+      if (roomType) {
+        const existing = roomTypePerformanceMap.get(roomType) || { bookings: 0, revenue: 0 };
+        roomTypePerformanceMap.set(roomType, {
+          bookings: existing.bookings + booking._count.id,
+          revenue: existing.revenue + (booking._sum.totalPrice || 0),
+        });
+      }
+    });
+
+    const roomTypePerformance = Array.from(roomTypePerformanceMap.entries()).map(([type, data]) => ({
+      type,
+      bookings: data.bookings,
+      revenue: data.revenue,
+    }));
 
     // Customer acquisition trends
     const customerAcquisition = await prisma.user.groupBy({
@@ -99,11 +118,7 @@ export async function GET(req: NextRequest) {
         date: item.createdAt.toISOString().split('T')[0],
         revenue: item._sum.totalPrice || 0,
       })),
-      roomTypePerformance: roomTypePerformance.map(item => ({
-        type: item.type,
-        bookings: item._count.bookings,
-        revenue: item._sum.bookings || 0,
-      })),
+      roomTypePerformance,
       customerAcquisition: customerAcquisition.map(item => ({
         date: item.createdAt.toISOString().split('T')[0],
         newCustomers: item._count.id,
@@ -120,4 +135,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

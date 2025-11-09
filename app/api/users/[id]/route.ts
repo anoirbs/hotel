@@ -8,7 +8,7 @@ const updateUserSchema = z.object({
   isAdmin: z.boolean(),
 });
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const token = req.headers.get('authorization')?.split(' ')[1];
   const payload = verifyToken(token || '');
   if (!token || !payload || !payload.isAdmin) {
@@ -16,11 +16,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   try {
+    const { id } = await params;
     const body = await req.json();
     const data = updateUserSchema.parse(body);
 
+    if (!id) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
+
     const user = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: { isAdmin: data.isAdmin },
       select: { id: true, email: true, isAdmin: true, updatedAt: true },
     });

@@ -128,7 +128,7 @@ export default function AdminLogin() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full btn-primary bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Signing In...' : 'Sign In as Admin'}
             </button>
@@ -141,14 +141,7 @@ export default function AdminLogin() {
           </div>
         </div>
 
-        {/* Demo Credentials */}
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-red-800 mb-2">Admin Demo Credentials:</h3>
-          <div className="text-sm text-red-700">
-            <p><strong>Email:</strong> admin@example.com</p>
-            <p><strong>Password:</strong> admin123</p>
-          </div>
-        </div>
+
       </div>
     </div>
   );

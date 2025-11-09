@@ -21,20 +21,16 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Try to get from a wedding inquiry table, or use a generic messages table
-    // For now, we'll create a simple structure that can work with existing DB
-    const inquiries = await prisma.$queryRaw`
-      SELECT * FROM "WeddingInquiry" ORDER BY "createdAt" DESC
-    `.catch(() => {
-      // If table doesn't exist, return empty array
-      return [];
+    const inquiries = await prisma.weddingInquiry.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
 
     return NextResponse.json(inquiries);
   } catch (error) {
     console.error('Error fetching wedding inquiries:', error);
-    // If table doesn't exist, return empty array for now
-    return NextResponse.json([]);
+    return NextResponse.json({ error: 'Failed to fetch inquiries' }, { status: 500 });
   }
 }
 
@@ -44,25 +40,23 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
     const validatedData = weddingInquirySchema.parse(data);
 
-    // Try to save to database
-    // First, try WeddingInquiry model
-    try {
-      const inquiry = await prisma.$executeRaw`
-        INSERT INTO "WeddingInquiry" (name, email, "meetingDate", guests, requests, "createdAt", "updatedAt")
-        VALUES (${validatedData.name}, ${validatedData.email}, ${validatedData.meetingDate}, ${validatedData.guests}, ${validatedData.requests || ''}, NOW(), NOW())
-        RETURNING *
-      `;
-      return NextResponse.json({ success: true, inquiry }, { status: 201 });
-    } catch (dbError) {
-      // If WeddingInquiry table doesn't exist, try using a generic approach
-      // For now, we'll just return success and log it
-      console.log('Wedding inquiry received:', validatedData);
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Inquiry submitted successfully',
-        data: validatedData 
-      }, { status: 201 });
-    }
+    // Save to database using Prisma
+    const inquiry = await prisma.weddingInquiry.create({
+      data: {
+        name: validatedData.name,
+        email: validatedData.email,
+        meetingDate: validatedData.meetingDate,
+        guests: validatedData.guests,
+        requests: validatedData.requests || null,
+        status: 'pending',
+      },
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Inquiry submitted successfully',
+      inquiry 
+    }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors }, { status: 400 });

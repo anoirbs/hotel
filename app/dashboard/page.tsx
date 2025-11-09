@@ -25,6 +25,17 @@ interface Booking {
   createdAt: string;
 }
 
+interface WeddingInquiry {
+  id: string;
+  name: string;
+  email: string;
+  meetingDate: string;
+  guests: string;
+  requests?: string;
+  status: string;
+  createdAt: string;
+}
+
 interface User {
   id: string;
   email: string;
@@ -33,6 +44,7 @@ interface User {
 
 export default function UserDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [weddingInquiries, setWeddingInquiries] = useState<WeddingInquiry[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -67,9 +79,11 @@ export default function UserDashboard() {
         isAdmin: payload.isAdmin
       });
       fetchBookings();
+      fetchWeddingInquiries();
     } catch (error) {
       console.error('Error decoding token:', error);
       localStorage.removeItem('token');
+      window.dispatchEvent(new Event('auth-change'));
       router.push('/login');
     }
   };
@@ -90,6 +104,25 @@ export default function UserDashboard() {
       console.error('Error fetching bookings:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchWeddingInquiries = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      const response = await fetch('/api/weddings/user', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setWeddingInquiries(data);
+      } else {
+        console.error('Error fetching wedding inquiries:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching wedding inquiries:', error);
     }
   };
 
@@ -175,6 +208,7 @@ export default function UserDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    window.dispatchEvent(new Event('auth-change'));
     router.push('/');
   };
 
@@ -199,20 +233,6 @@ export default function UserDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <nav className="bg-white shadow-lg sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center">
-                <Link href="/" className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">H</span>
-                  </div>
-                  <span className="text-xl font-bold text-gray-800">Hotel Paradise</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </nav>
         <main className="max-w-6xl mx-auto px-4 py-8">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
@@ -235,37 +255,6 @@ export default function UserDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <nav className="bg-white shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">H</span>
-                </div>
-                <span className="text-xl font-bold text-gray-800">Hotel Paradise</span>
-              </Link>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Link href="/rooms" className="text-gray-700 hover:text-blue-600 font-medium">
-                Browse Rooms
-              </Link>
-              <span className="text-gray-700">
-                {getGreeting()}, {user.email.split('@')[0]}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -280,7 +269,7 @@ export default function UserDashboard() {
           </Link>
         </div>
 
-        {bookings.length === 0 ? (
+        {bookings.length === 0 && weddingInquiries.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-gray-400 text-8xl mb-6">🏨</div>
             <h2 className="text-3xl font-bold text-gray-600 mb-4">No bookings yet</h2>
@@ -293,8 +282,13 @@ export default function UserDashboard() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {bookings.map((booking) => (
+          <div className="space-y-8">
+            {/* Room Bookings Section */}
+            {bookings.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Room Bookings</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {bookings.map((booking) => (
               <div key={booking.id} className="card group hover:shadow-2xl transition-all duration-300">
                 <div className="relative overflow-hidden">
                   {booking.room.images && booking.room.images.length > 0 ? (
@@ -396,6 +390,66 @@ export default function UserDashboard() {
                 </div>
               </div>
             ))}
+                </div>
+              </div>
+            )}
+
+            {/* Wedding Inquiries Section */}
+            {weddingInquiries.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Wedding Inquiries</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {weddingInquiries.map((inquiry) => (
+                    <div key={inquiry.id} className="card group hover:shadow-2xl transition-all duration-300">
+                      <div className="p-6">
+                        <div className="flex justify-between items-start mb-3">
+                          <h2 className="text-xl font-bold text-gray-800 group-hover:text-pink-600 transition-colors">
+                            💍 Wedding Inquiry
+                          </h2>
+                          <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                            inquiry.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            inquiry.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                            inquiry.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {inquiry.status.charAt(0).toUpperCase() + inquiry.status.slice(1)}
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-3 text-sm text-gray-600 mb-4">
+                          <div className="flex justify-between">
+                            <span className="font-medium">Name:</span>
+                            <span>{inquiry.name}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium">Email:</span>
+                            <span>{inquiry.email}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium">Meeting Date:</span>
+                            <span>{new Date(inquiry.meetingDate).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium">Number of Guests:</span>
+                            <span>{inquiry.guests}</span>
+                          </div>
+                          {inquiry.requests && (
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                              <span className="font-medium block mb-1">Special Requests:</span>
+                              <span className="text-gray-700">{inquiry.requests}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between text-xs text-gray-500 mt-3 pt-3 border-t border-gray-200">
+                            <span>Submitted:</span>
+                            <span>{new Date(inquiry.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>

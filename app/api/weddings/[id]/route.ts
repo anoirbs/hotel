@@ -5,7 +5,7 @@ import { verifyToken } from '@/lib/auth';
 // DELETE - Delete a wedding inquiry (admin only)
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const token = req.headers.get('authorization')?.split(' ')[1];
   const payload = verifyToken(token || '');
@@ -15,11 +15,14 @@ export async function DELETE(
   }
 
   try {
-    await prisma.$executeRaw`
-      DELETE FROM "WeddingInquiry" WHERE id = ${params.id}
-    `.catch(() => {
-      // If table doesn't exist, just return success
-      return null;
+    const { id } = await params;
+    
+    if (!id) {
+      return NextResponse.json({ error: 'Inquiry ID is required' }, { status: 400 });
+    }
+
+    await prisma.weddingInquiry.delete({
+      where: { id },
     });
 
     return NextResponse.json({ success: true });

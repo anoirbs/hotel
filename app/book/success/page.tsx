@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function BookingSuccess() {
+function BookingSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
@@ -70,5 +70,23 @@ export default function BookingSuccess() {
         </a>
       </div>
     </main>
+  );
+}
+
+export default function BookingSuccess() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Loading...</h1>
+            <p className="text-gray-600">Please wait</p>
+          </div>
+        </main>
+      }
+    >
+      <BookingSuccessContent />
+    </Suspense>
   );
 }

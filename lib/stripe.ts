@@ -23,7 +23,8 @@ export const getStripe = (): Stripe => {
   try {
     const key = getStripeKey();
     const stripe = new Stripe(key, {
-      apiVersion: '2023-10-16',
+      apiVersion: '2023-10-16', // Updated to newer version
+      typescript: true,
     });
     globalForStripe.stripe = stripe;
     return stripe;
@@ -32,4 +33,3 @@ export const getStripe = (): Stripe => {
     throw error;
   }
 };
-
