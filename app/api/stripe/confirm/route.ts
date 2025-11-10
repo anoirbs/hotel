@@ -20,6 +20,16 @@ export async function POST(req: NextRequest) {
     }
     
     console.log('Confirm session request:', { sessionId, userId: payload.id });
+
+    // **CHECK IF BOOKING ALREADY EXISTS FOR THIS SESSION**
+    const existingBooking = await prisma.booking.findUnique({
+      where: { paymentId: sessionId },
+    });
+
+    if (existingBooking) {
+      console.log('Booking already exists for this session:', existingBooking.id);
+      return NextResponse.json(existingBooking, { status: 200 });
+    }
     
     // Retrieve and verify checkout session
     const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -49,6 +59,7 @@ export async function POST(req: NextRequest) {
     const checkIn = session.metadata?.checkIn;
     const checkOut = session.metadata?.checkOut;
     const userName = session.metadata?.userName || payload.email.split('@')[0];
+    const specialRequests = session.metadata?.specialRequests;
 
     if (!roomId || !checkIn || !checkOut) {
       return NextResponse.json({ error: 'Missing booking information in session' }, { status: 400 });
@@ -132,9 +143,9 @@ export async function POST(req: NextRequest) {
         checkIn: checkInDate,
         checkOut: checkOutDate,
         totalPrice,
-        paymentId: paymentIntentId,
+        paymentId: sessionId, // Use sessionId as unique identifier
         status: 'confirmed',
-        specialRequests: null,
+        specialRequests: specialRequests || null,
       },
     });
 
@@ -143,6 +154,21 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Error confirming booking:', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    
+    // Check if it's a unique constraint error
+    if (errorMessage.includes('Unique constraint') && errorMessage.includes('paymentId')) {
+      // Booking already exists, fetch and return it
+      const { sessionId } = await req.json();
+      const existingBooking = await prisma.booking.findUnique({
+        where: { paymentId: sessionId },
+      });
+      
+      if (existingBooking) {
+        console.log('Returning existing booking after constraint error:', existingBooking.id);
+        return NextResponse.json(existingBooking, { status: 200 });
+      }
+    }
+    
     return NextResponse.json({ 
       error: errorMessage,
       details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
