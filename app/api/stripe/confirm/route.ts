@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     console.log('Confirm session request:', { sessionId, userId: payload.id });
 
     // **CHECK IF BOOKING ALREADY EXISTS FOR THIS SESSION**
-    const existingBooking = await prisma.booking.findUnique({
+    const existingBooking = await prisma.booking.findFirst({
       where: { paymentId: sessionId },
     });
 
@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
     if (errorMessage.includes('Unique constraint') && errorMessage.includes('paymentId')) {
       // Booking already exists, fetch and return it
       const { sessionId } = await req.json();
-      const existingBooking = await prisma.booking.findUnique({
+      const existingBooking = await prisma.booking.findFirst({
         where: { paymentId: sessionId },
       });
       

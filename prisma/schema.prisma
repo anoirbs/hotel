@@ -37,7 +37,7 @@ model Booking {
   totalPrice  Float
   status      String   @default("confirmed") // confirmed, cancelled, completed
   paymentId   String?  // Stripe payment intent ID
-  invoiceId   String?  @unique // Stripe invoice ID
+  invoiceId   String?  // Stripe invoice ID
   invoiceUrl  String?  // Stripe invoice PDF URL
   specialRequests String?
   room        Room     @relation(fields: [roomId], references: [id])

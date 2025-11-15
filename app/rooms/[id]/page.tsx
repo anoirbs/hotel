@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import PaymentPopup from '@/components/PaymentPopup';
 import { useLanguage } from '@/lib/language-context';
 
 interface Room {
@@ -48,6 +47,7 @@ export default function RoomDetails() {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isProcessingBooking, setIsProcessingBooking] = useState(false);
   const [reviewForm, setReviewForm] = useState({
     rating: 5,
     comment: '',
@@ -59,8 +59,6 @@ export default function RoomDetails() {
     userEmail: '',
     specialRequests: '',
   });
-  const [showPaymentPopup, setShowPaymentPopup] = useState(false);
-  const [isProcessingBooking, setIsProcessingBooking] = useState(false);
   const router = useRouter();
   const params = useParams() as { id: string };
   const { t } = useLanguage();
@@ -173,8 +171,10 @@ export default function RoomDetails() {
       return;
     }
 
-    // Check room availability first
+    setIsProcessingBooking(true);
+
     try {
+      // Check room availability first
       const availabilityResponse = await fetch('/api/rooms/availability', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -188,36 +188,51 @@ export default function RoomDetails() {
       if (!availabilityResponse.ok) {
         const errorData = await availabilityResponse.json();
         alert(errorData.error || 'Room not available for selected dates');
+        setIsProcessingBooking(false);
         return;
       }
 
-      // Open payment popup
-      setShowPaymentPopup(true);
-    } catch (error) {
-      console.error('Error checking availability:', error);
-      alert('Error checking room availability');
-    }
-  };
+      // Create Stripe checkout session
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          roomId: params.id,
+          checkIn: bookingForm.checkIn,
+          checkOut: bookingForm.checkOut,
+          specialRequests: bookingForm.specialRequests || undefined,
+        }),
+      });
 
-  const handlePaymentSuccess = () => {
-    setShowPaymentPopup(false);
-    setShowBookingForm(false);
-    setBookingForm({
-      checkIn: '',
-      checkOut: '',
-      userName: '',
-      userEmail: '',
-      specialRequests: '',
-    });
-    alert('Booking confirmed! Payment successful.');
-    router.push('/dashboard');
+      if (response.ok) {
+        const { url } = await response.json();
+        
+        if (!url) {
+          alert('Failed to create checkout session. Please try again.');
+          setIsProcessingBooking(false);
+          return;
+        }
+
+        // Redirect to Stripe checkout
+        window.location.href = url;
+      } else {
+        const { error } = await response.json();
+        alert(error || 'Error initiating payment');
+        setIsProcessingBooking(false);
+      }
+    } catch (error) {
+      console.error('Error processing booking:', error);
+      alert('Error processing booking. Please try again.');
+      setIsProcessingBooking(false);
+    }
   };
 
   const calculateTotalPrice = () => {
     if (!room || !bookingForm.checkIn || !bookingForm.checkOut) return 0;
-    const checkIn = new Date(bookingForm.checkIn);
-    const checkOut = new Date(bookingForm.checkOut);
-    const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+    const nights = Math.ceil((new Date(bookingForm.checkOut).getTime() - new Date(bookingForm.checkIn).getTime()) / (1000 * 60 * 60 * 24));
     return room.price * nights;
   };
 
@@ -524,14 +539,16 @@ export default function RoomDetails() {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+                  disabled={isProcessingBooking}
+                  className="flex-1 bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {t("proceedToPayment")}
+                  {isProcessingBooking ? t("processing") || "Processing..." : t("proceedToPayment")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowBookingForm(false)}
-                  className="flex-1 bg-secondary text-secondary-foreground py-3 rounded-lg font-semibold hover:bg-secondary/80 transition-colors"
+                  disabled={isProcessingBooking}
+                  className="flex-1 bg-secondary text-secondary-foreground py-3 rounded-lg font-semibold hover:bg-secondary/80 transition-colors disabled:opacity-50"
                 >
                   {t("cancel")}
                 </button>
@@ -596,28 +613,6 @@ export default function RoomDetails() {
             </form>
           </div>
         </div>
-      )}
-
-      {/* Payment Popup */}
-      {showPaymentPopup && room && (
-        <PaymentPopup
-          isOpen={showPaymentPopup}
-          onClose={() => setShowPaymentPopup(false)}
-          amount={calculateTotalPrice()}
-          roomName={room.name}
-          checkIn={bookingForm.checkIn}
-          checkOut={bookingForm.checkOut}
-          onSuccess={handlePaymentSuccess}
-          bookingData={{
-            roomId: params.id,
-            userName: bookingForm.userName,
-            userEmail: bookingForm.userEmail,
-            checkIn: bookingForm.checkIn,
-            checkOut: bookingForm.checkOut,
-            specialRequests: bookingForm.specialRequests,
-          }}
-          stripePublishableKey={typeof window !== 'undefined' ? localStorage.getItem('stripe_publishable_key') : null}
-        />
       )}
     </main>
   );
