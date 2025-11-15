@@ -2,7 +2,7 @@ import './globals.css';
 import { ClientLayout } from '@/components/client-layout';
 
 export const metadata = {
-  title: 'Hotel Paradise - Luxury Hotel Booking',
+  title: 'Feudo Nobile - Luxury Hotel Booking',
   description: 'Book luxury hotel rooms with ease',
 };
 

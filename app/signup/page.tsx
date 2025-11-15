@@ -102,7 +102,7 @@ export default function Signup() {
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-xl">H</span>
             </div>
-            <span className="text-2xl font-bold text-gray-800">Hotel Paradise</span>
+            <span className="text-2xl font-bold text-gray-800">Feudo Nobile</span>
           </Link>
           <h2 className="text-3xl font-bold text-gray-800">Create Your Account</h2>
           <p className="mt-2 text-gray-600">Join us for an amazing stay experience</p>

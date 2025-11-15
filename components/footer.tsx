@@ -15,7 +15,7 @@ export default function Footer() {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">H</span>
               </div>
-              <span className="text-xl font-bold">Hotel Paradise</span>
+              <span className="text-xl font-bold">Feudo Nobile</span>
             </div>
             <p className="text-sm text-gray-400">
               Experience luxury and elegance at our premium hotel.
@@ -64,7 +64,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-700 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; 2025 Hotel Paradise. All rights reserved.</p>
+          <p>&copy; 2025 Feudo Nobile. All rights reserved.</p>
         </div>
       </div>
     </footer>

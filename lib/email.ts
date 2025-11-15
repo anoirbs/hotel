@@ -41,9 +41,9 @@ export async function sendVerificationEmail(
   }
 
   const mailOptions = {
-    from: `"Hotel Paradise" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+    from: `"Feudo Nobile" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
     to: email,
-    subject: 'Verify Your Email - Hotel Paradise',
+    subject: 'Verify Your Email - Feudo Nobile',
     html: `
       <!DOCTYPE html>
       <html>
@@ -53,11 +53,11 @@ export async function sendVerificationEmail(
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0;">Hotel Paradise</h1>
+            <h1 style="color: white; margin: 0;">Feudo Nobile</h1>
           </div>
           <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
             <h2 style="color: #8B4513; margin-top: 0;">Verify Your Email Address</h2>
-            <p>Thank you for signing up with Hotel Paradise!</p>
+            <p>Thank you for signing up with Feudo Nobile!</p>
             <p>Please click the button below to verify your email address and activate your account:</p>
             <div style="text-align: center; margin: 30px 0;">
               <a href="${verificationUrl}" 
@@ -74,15 +74,15 @@ export async function sendVerificationEmail(
             </p>
           </div>
           <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-            <p>© ${new Date().getFullYear()} Hotel Paradise. All rights reserved.</p>
+            <p>© ${new Date().getFullYear()} Feudo Nobile. All rights reserved.</p>
           </div>
         </body>
       </html>
     `,
     text: `
-      Verify Your Email - Hotel Paradise
+      Verify Your Email - Feudo Nobile
 
-      Thank you for signing up with Hotel Paradise!
+      Thank you for signing up with Feudo Nobile!
 
       Please click the link below to verify your email address:
       ${verificationUrl}
@@ -124,9 +124,9 @@ export async function sendPasswordResetEmail(
   }
 
   const mailOptions = {
-    from: `"Hotel Paradise" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+    from: `"Feudo Nobile" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
     to: email,
-    subject: 'Reset Your Password - Hotel Paradise',
+    subject: 'Reset Your Password - Feudo Nobile',
     html: `
       <!DOCTYPE html>
       <html>
@@ -136,11 +136,11 @@ export async function sendPasswordResetEmail(
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0;">Hotel Paradise</h1>
+            <h1 style="color: white; margin: 0;">Feudo Nobile</h1>
           </div>
           <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
             <h2 style="color: #8B4513; margin-top: 0;">Reset Your Password</h2>
-            <p>We received a request to reset your password for your Hotel Paradise account.</p>
+            <p>We received a request to reset your password for your Feudo Nobile account.</p>
             <p>Click the button below to reset your password:</p>
             <div style="text-align: center; margin: 30px 0;">
               <a href="${resetUrl}" 
@@ -160,15 +160,15 @@ export async function sendPasswordResetEmail(
             </p>
           </div>
           <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-            <p>© ${new Date().getFullYear()} Hotel Paradise. All rights reserved.</p>
+            <p>© ${new Date().getFullYear()} Feudo Nobile. All rights reserved.</p>
           </div>
         </body>
       </html>
     `,
     text: `
-      Reset Your Password - Hotel Paradise
+      Reset Your Password - Feudo Nobile
 
-      We received a request to reset your password for your Hotel Paradise account.
+      We received a request to reset your password for your Feudo Nobile account.
 
       Please click the link below to reset your password:
       ${resetUrl}

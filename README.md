@@ -110,7 +110,7 @@ SMTP_PORT="587"
 SMTP_SECURE="false"
 SMTP_USER="your-email@gmail.com"
 SMTP_PASSWORD="your-app-password"
-SMTP_FROM="Hotel Paradise <noreply@hotelparadise.com>"
+SMTP_FROM="Feudo Nobile <noreply@feudo.nobile.com>"
 
 # Application Settings
 NODE_ENV="development"
@@ -142,7 +142,7 @@ The application uses Nodemailer for sending verification emails. Configure SMTP 
    SMTP_SECURE="false"
    SMTP_USER="your-email@gmail.com"
    SMTP_PASSWORD="your-app-password-here"
-   SMTP_FROM="Hotel Paradise <your-email@gmail.com>"
+   SMTP_FROM="Feudo Nobile <your-email@gmail.com>"
    ```
 
 #### Other SMTP Providers
