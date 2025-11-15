@@ -5,314 +5,216 @@ export const translations = {
     // Navigation
     home: "Home",
     rooms: "Rooms",
-    contact: "Contact",
     weddings: "Weddings",
-    exploreWeddings: "Explore Our Wedding Services",
-    weddingHome: "Wedding Home",
-    explore: "Explore",
-    getInTouchWithUs: "Get in touch with our wedding team",
-    back: "Back",
-
-    // Hero
+    contact: "Contact",
+    
+    // Hero Section
     bookNow: "Book Now",
-
+    
+    // New Homepage Sections
+    ourStory: "Our Story",
+    storyTitle1: "A Timeless Sicilian Estate",
+    storyContent1: "In the heart of southeastern Sicily, among centuries-old olive groves and authentic landscapes, stands Feudo Nobile, an ancient estate immersed in the peace of the countryside. Within the property lies a charming 19th-century farmhouse, a rare witness to the rural culture of Sicily.",
+    storyContent2: "Here, time seems to have stopped: every corner tells stories of authenticity and love for the land. Amid the magic of receptions and the elegance of its rooms, Feudo Nobile welcomes its guests into an intimate, timeless atmosphere, where every detail invites relaxation, beauty, and a deep immersion in the true spirit of Sicily.",
+    
     // Search
-    findYourPerfectRoom: "Find Your Perfect Room",
-    searchAndBookDirectly: "Search and book directly from here",
-    checkIn: "Check-in",
-    checkOut: "Check-out",
-    guests: "Guests",
-    guest: "Guest",
     search: "Search",
-    availableRooms: "Available Rooms",
-    pricePerNight: "Price per night",
-    capacity: "Capacity",
-    noRoomsAvailable: "No rooms available for the selected dates and guest count. Please try different dates.",
-    capacityError:
-      "Sorry, this room cannot accommodate the number of guests you selected. Please choose a different room or reduce the number of guests.",
-    more: "more",
-
-    // Features
-    whyChooseLuxeHaven: "Why Choose Luxe Haven",
-    premiumComfort: "Premium Comfort",
-    premiumComfortDesc: "Indulge in our luxurious rooms with premium bedding, modern amenities, and stunning views.",
-    primeLocation: "Prime Location",
-    primeLocationDesc: "Located in the most desirable area with easy access to attractions, dining, and entertainment.",
-    exceptionalService: "Exceptional Service",
-    exceptionalServiceDesc: "Our dedicated staff is available 24/7 to ensure your stay is perfect and memorable.",
-
-    // CTA
-    readyForYourPerfectStay: "Ready for Your Perfect Stay?",
-    browseOurCollection: "Browse our collection of luxurious rooms and book your unforgettable experience today.",
-    viewAllRooms: "View All Rooms",
-
-    // Booking
-    reservationDetails: "Reservation Details",
-    fullName: "Full Name",
-    email: "Email",
+    checkIn: "Check In",
+    checkOut: "Check Out",
     checkInDate: "Check-in Date",
     checkOutDate: "Check-out Date",
-    numberOfGuests: "Number of Guests",
-    totalPrice: "Total Price",
-    proceedToPayment: "Proceed to Payment",
-    cancel: "Cancel",
-    bookingConfirmed: "Booking Confirmed!",
-    bookingConfirmedDesc: "Your reservation has been successfully completed.",
-    confirmationEmailSent: "A confirmation email has been sent to",
-    bookingDetails: "Booking Details",
-    booked: "Booked",
-    available: "Available",
-    from: "From",
-    perNight: "per night",
-    amenities: "Amenities",
-    adminPanel: "Admin Panel",
-    bookings: "Bookings",
-    messages: "Messages",
-    noBookings: "No bookings yet",
-    noMessages: "No messages yet",
-    guestName: "Guest Name",
-    status: "Status",
-
-    // Payment
-    paymentDetails: "Payment Details",
-    orderSummary: "Order Summary",
-    cardNumber: "Card Number",
-    cardholderName: "Cardholder Name",
-    expiryDate: "Expiry Date",
-    cvv: "CVV",
-    completeBooking: "Complete Booking",
-    paymentSuccessful: "Payment Successful!",
-    yourBookingHasBeenConfirmed: "Your booking has been confirmed. A confirmation email has been sent to",
-    securityNotice: "Your payment information is secure and encrypted",
-    mockupPaymentNotice: "This is a mockup payment form. No real charges will be made.",
-    processing: "Processing...",
-    pay: "Pay",
-
-    // Contact
-    contactUs: "Contact Us",
-    getInTouch: "Get in Touch",
-    sendUsMessage: "Send us a message and we will respond as soon as possible.",
-    phone: "Phone",
-    address: "Address",
-    message: "Message",
-    send: "Send",
-    ourRooms: "Our Rooms",
-    discoverOurCollection: "Discover our collection of luxurious accommodations",
-    availableRoomsText: "Available Rooms",
-    sendMessage: "Send Message",
-    thankYouMessage: "Thank you! We'll get back to you soon.",
-    availableHours: "Available 24/7",
-    respondWithin: "We'll respond within 24 hours",
-    findUs: "Find Us",
-    sampleMapLocation: "This is a sample map location. Replace with your actual hotel coordinates.",
-    fullNamePlaceholder: "Your name",
-    emailPlaceholder: "your@email.com",
-    subjectPlaceholder: "How can we help?",
-    messagePlaceholder: "Your message...",
-    getInTouchDesc: "Get in touch with our team for any inquiries or special requests",
-
-    weddingServices: "Wedding Services",
-    perfectVenueForYourSpecialDay: "The Perfect Venue for Your Special Day",
-    weddingGallery: "Wedding Gallery",
-    viewWeddingGallery: "View Wedding Gallery",
-    weddingRooms: "Wedding Rooms",
-    weddingContact: "Wedding Inquiries",
-    planYourWedding: "Plan Your Wedding",
-    ourWeddingServices: "Our Wedding Services",
-    elegantBallroom: "Elegant Ballroom",
-    elegantBallroomDesc: "Spacious ballroom with stunning chandeliers and customizable décor for up to 300 guests.",
-    weddingCatering: "Wedding Catering",
-    weddingCateringDesc: "Exquisite culinary experience with personalized menus and professional service.",
-    photographyServices: "Photography Services",
-    photographyServicesDesc: "Professional photography and videography to capture your precious moments.",
-    weddingPlanning: "Wedding Planning",
-    weddingPlanningDesc: "Dedicated wedding coordinator to ensure every detail is perfect.",
-    weddingInquiry: "Wedding Inquiry",
-    weddingInquiryDesc: "Contact our wedding team to discuss your special day",
-    meetingDate: "Meeting Date",
+    guests: "Guests",
+    guest: "Guest",
+    availableRooms: "Available Rooms",
+    findYourPerfectRoom: "Find Your Perfect Room",
+    searchAndBookDirectly: "Search and book your ideal accommodation directly",
+    noRoomsAvailable: "No rooms available for the selected dates and guests",
     
-    specialRequests: "Special Requests",
-    submitInquiry: "Submit Inquiry",
-    weddingConfirmed: "Inquiry Submitted!",
-    weddingConfirmedDesc: "Our wedding team will contact you shortly to discuss your special day.",
-
+    // Amenities
     hotelAmenities: "Hotel Amenities",
     outdoorPool: "Outdoor Pool",
     freeParking: "Free Parking",
-    freeWiFi: "Free Wi-Fi",
+    freeWiFi: "Free WiFi",
     airportShuttle: "Airport Shuttle",
     nonSmokingRooms: "Non-Smoking Rooms",
     restaurant: "Restaurant",
     roomService: "Room Service",
-    teaKettleInRooms: "Tea & Kettle in All Rooms",
+    teaKettleInRooms: "Tea/Coffee Maker",
     bar: "Bar",
     breakfast: "Breakfast",
-
-    // Room Details
+    
+    // Rooms
+    ourRooms: "Our Rooms",
+    discoverOurCollection: "Discover our collection of luxury accommodations",
+    amenities: "Amenities",
+    more: "more",
+    from: "from",
+    perNight: "per night",
     details: "Details",
-    description: "Description",
     roomNotFound: "Room not found",
-    backToRooms: "Back to rooms",
-    roomType: "Room Type",
+    backToRooms: "Back to Rooms",
+    
+    // Room Details
     quickInfo: "Quick Info",
-    searchRooms: "Search Rooms",
+    roomType: "Room Type",
+    capacity: "Capacity",
+    pricePerNight: "Price per Night",
+    description: "Description",
+    
+    // Booking
+    reservationDetails: "Reservation Details",
+    fullName: "Full Name",
+    fullNamePlaceholder: "Enter your full name",
+    email: "Email",
+    emailPlaceholder: "your.email@example.com",
+    specialRequests: "Special Requests",
+    messagePlaceholder: "Any special requests or preferences...",
+    totalPrice: "Total Price",
+    proceedToPayment: "Proceed to Payment",
+    cancel: "Cancel",
+    
+    // Wedding
+    weddingServices: "Wedding Services",
+    perfectVenueForYourSpecialDay: "The perfect venue for your special day",
+    planYourWedding: "Plan Your Wedding",
+    weddingGallery: "Wedding Gallery",
+    viewWeddingGallery: "View our beautiful wedding venues and celebrations",
+    weddingInquiry: "Wedding Inquiry",
+    weddingInquiryDesc: "Fill out the form below and we'll get back to you within 24 hours",
+    meetingDate: "Preferred Meeting Date",
+    numberOfGuests: "Number of Guests",
+    submitInquiry: "Submit Inquiry",
+    weddingConfirmed: "Thank You!",
+    weddingConfirmedDesc: "We received your inquiry and will contact you soon",
+    
+    // Contact
+    contactUs: "Contact Us",
+    phone: "Phone",
+    address: "Address",
+    availableHours: "Available Hours",
+    respondWithin: "We respond within 24 hours",
+    
+    // Footer
+    back: "Back",
+    
+    // Dashboard
+    myBookings: "My Bookings",
+    myInvoices: "My Invoices",
+    viewInvoices: "View Invoices",
+    
+    // Common
+    loading: "Loading...",
+    error: "Error",
+    success: "Success",
   },
   it: {
     // Navigation
     home: "Home",
     rooms: "Camere",
-    contact: "Contatti",
     weddings: "Matrimoni",
-    exploreWeddings: "Esplora i Nostri Servizi per Matrimoni",
-    weddingHome: "Home Matrimoni",
-    explore: "Esplora",
-    getInTouchWithUs: "Mettiti in contatto con il nostro team matrimoni",
-    back: "Indietro",
-
-    // Hero
+    contact: "Contatti",
+    
+    // Hero Section
     bookNow: "Prenota Ora",
-
+    
+    // New Homepage Sections
+    ourStory: "La Nostra Storia",
+    storyTitle1: "Un'Antica Tenuta Siciliana Senza Tempo",
+    storyContent1: "Nel cuore della Sicilia sud-orientale, tra uliveti secolari e paesaggi autentici, sorge Feudo Nobile, un antico podere immerso nella quiete della campagna. All'interno della tenuta sorge un affascinante casale ottocentesco, custode di una rara testimonianza della cultura rurale siciliana.",
+    storyContent2: "Qui, il tempo sembra essersi fermato: ogni angolo racconta storie di autenticità e di amore per la terra. Tra la magia dei ricevimenti e l'eleganza delle camere, Feudo Nobile accoglie i suoi ospiti in un'atmosfera intima e senza tempo, dove ogni dettaglio invita al relax, alla bellezza e a un'immersione profonda nella vera Sicilia.",
+    
     // Search
-    findYourPerfectRoom: "Trova la Tua Camera Perfetta",
-    searchAndBookDirectly: "Cerca e prenota direttamente da qui",
-    checkIn: "Check-in",
-    checkOut: "Check-out",
-    guests: "Ospiti",
-    guest: "Ospite",
     search: "Cerca",
-    availableRooms: "Camere Disponibili",
-    pricePerNight: "Prezzo per notte",
-    capacity: "Capienza",
-    noRoomsAvailable:
-      "Nessuna camera disponibile per le date e il numero di ospiti selezionati. Prova con date diverse.",
-    capacityError:
-      "Spiacenti, questa camera non può ospitare il numero di ospiti che hai selezionato. Scegli una camera diversa o riduci il numero di ospiti.",
-    more: "altri",
-
-    // CTA
-    readyForYourPerfectStay: "Pronto per il Tuo Soggiorno Perfetto?",
-    browseOurCollection:
-      "Sfoglia la nostra collezione di camere lussuose e prenota la tua esperienza indimenticabile oggi.",
-    viewAllRooms: "Visualizza Tutte le Camere",
-
-    // Booking
-    reservationDetails: "Dettagli della Prenotazione",
-    fullName: "Nome Completo",
-    email: "Email",
+    checkIn: "Check In",
+    checkOut: "Check Out",
     checkInDate: "Data di Check-in",
     checkOutDate: "Data di Check-out",
-    numberOfGuests: "Numero di Ospiti",
-    totalPrice: "Prezzo Totale",
-    proceedToPayment: "Procedi al Pagamento",
-    cancel: "Annulla",
-    bookingConfirmed: "Prenotazione Confermata!",
-    bookingConfirmedDesc: "La tua prenotazione è stata completata con successo.",
-    confirmationEmailSent: "Un'email di conferma è stata inviata a",
-    bookingDetails: "Dettagli della Prenotazione",
-    booked: "Prenotato",
-    available: "Disponibile",
-    from: "Da",
-    perNight: "per notte",
-    amenities: "Servizi",
-    adminPanel: "Pannello Admin",
-    bookings: "Prenotazioni",
-    messages: "Messaggi",
-    noBookings: "Nessuna prenotazione ancora",
-    noMessages: "Nessun messaggio ancora",
-    guestName: "Nome Ospite",
-    status: "Stato",
-
-    // Payment
-    paymentDetails: "Dettagli del Pagamento",
-    orderSummary: "Riepilogo Ordine",
-    cardNumber: "Numero Carta",
-    cardholderName: "Nome Titolare Carta",
-    expiryDate: "Data di Scadenza",
-    cvv: "CVV",
-    completeBooking: "Completa Prenotazione",
-    paymentSuccessful: "Pagamento Riuscito!",
-    yourBookingHasBeenConfirmed: "La tua prenotazione è stata confermata. Un'email di conferma è stata inviata a",
-    securityNotice: "Le tue informazioni di pagamento sono sicure e crittografate",
-    mockupPaymentNotice: "Questo è un modulo di pagamento mockup. Non verranno effettuati addebiti reali.",
-    processing: "Elaborazione in corso...",
-    pay: "Paga",
-
-    // Contact
-    contactUs: "Contattaci",
-    getInTouch: "Mettiti in Contatto",
-    sendUsMessage: "Inviaci un messaggio e ti risponderemo il prima possibile.",
-    phone: "Telefono",
-    address: "Indirizzo",
-    message: "Messaggio",
-    send: "Invia",
-    ourRooms: "Tutte le Camere",
-    discoverOurCollection: "Scopri la nostra collezione di alloggi lussuosi",
-    availableRoomsText: "Camere Disponibili",
-    sendMessage: "Invia Messaggio",
-    thankYouMessage: "Grazie! Ti risponderemo al più presto.",
-    availableHours: "Disponibile 24/7",
-    respondWithin: "Ti risponderemo entro 24 ore",
-    findUs: "Trovaci",
-    sampleMapLocation:
-      "Questa è una posizione di mappa di esempio. Sostituisci con le coordinate effettive del tuo hotel.",
-    fullNamePlaceholder: "Il tuo nome",
-    emailPlaceholder: "tua@email.com",
-    subjectPlaceholder: "Come possiamo aiutarti?",
-    messagePlaceholder: "Il tuo messaggio...",
-    getInTouchDesc: "Mettiti in contatto con il nostro team per qualsiasi domanda o richiesta speciale",
-
-    weddingServices: "Servizi per Matrimoni",
-    perfectVenueForYourSpecialDay: "Il Luogo Perfetto per il Tuo Giorno Speciale",
-    weddingGallery: "Galleria Matrimoni",
-    viewWeddingGallery: "Visualizza Galleria Matrimoni",
-    weddingRooms: "Camere per Matrimoni",
-    weddingContact: "Richieste Matrimoni",
-    planYourWedding: "Pianifica il Tuo Matrimonio",
-    ourWeddingServices: "I Nostri Servizi per Matrimoni",
-    elegantBallroom: "Sala da Ballo Elegante",
-    elegantBallroomDesc: "Sala spaziosa con splendidi lampadari e decorazioni personalizzabili per fino a 300 ospiti.",
-    weddingCatering: "Catering per Matrimoni",
-    weddingCateringDesc: "Esperienza culinaria raffinata con menu personalizzati e servizio professionale.",
-    photographyServices: "Servizi Fotografici",
-    photographyServicesDesc: "Fotografia e videografia professionale per catturare i tuoi momenti preziosi.",
-    weddingPlanning: "Pianificazione Matrimoni",
-    weddingPlanningDesc: "Coordinatore matrimoni dedicato per garantire che ogni dettaglio sia perfetto.",
-    weddingInquiry: "Richiesta Matrimonio",
-    weddingInquiryDesc: "Contatta il nostro team matrimoni per discutere il tuo giorno speciale",
-    meetingDate: "Data dell'incontro",
+    guests: "Ospiti",
+    guest: "Ospite",
+    availableRooms: "Camere Disponibili",
+    findYourPerfectRoom: "Trova la Tua Camera Perfetta",
+    searchAndBookDirectly: "Cerca e prenota direttamente il tuo alloggio ideale",
+    noRoomsAvailable: "Nessuna camera disponibile per le date e gli ospiti selezionati",
     
-    specialRequests: "Richieste Speciali",
-    submitInquiry: "Invia Richiesta",
-    weddingConfirmed: "Richiesta Inviata!",
-    weddingConfirmedDesc: "Il nostro team matrimoni ti contatterà a breve per discutere il tuo giorno speciale.",
-
+    // Amenities
     hotelAmenities: "Servizi dell'Hotel",
     outdoorPool: "Piscina Esterna",
     freeParking: "Parcheggio Gratuito",
-    freeWiFi: "Wi-Fi Gratuito",
-    airportShuttle: "Navetta Aeroporto",
+    freeWiFi: "WiFi Gratuito",
+    airportShuttle: "Navetta Aeroportuale",
     nonSmokingRooms: "Camere Non Fumatori",
     restaurant: "Ristorante",
     roomService: "Servizio in Camera",
-    teaKettleInRooms: "Tè e Bollitore in Tutte le Camere",
+    teaKettleInRooms: "Macchina per Tè/Caffè",
     bar: "Bar",
     breakfast: "Colazione",
-
-    // Room Details
+    
+    // Rooms
+    ourRooms: "Le Nostre Camere",
+    discoverOurCollection: "Scopri la nostra collezione di alloggi di lusso",
+    amenities: "Servizi",
+    more: "più",
+    from: "da",
+    perNight: "a notte",
     details: "Dettagli",
-    description: "Descrizione",
     roomNotFound: "Camera non trovata",
-    backToRooms: "Torna alle camere",
+    backToRooms: "Torna alle Camere",
+    
+    // Room Details
+    quickInfo: "Info Rapide",
     roomType: "Tipo di Camera",
-    quickInfo: "Informazioni Rapide",
-    searchRooms: "Cerca Camere",
+    capacity: "Capacità",
+    pricePerNight: "Prezzo per Notte",
+    description: "Descrizione",
+    
+    // Booking
+    reservationDetails: "Dettagli Prenotazione",
+    fullName: "Nome Completo",
+    fullNamePlaceholder: "Inserisci il tuo nome completo",
+    email: "Email",
+    emailPlaceholder: "tua.email@esempio.it",
+    specialRequests: "Richieste Speciali",
+    messagePlaceholder: "Eventuali richieste o preferenze speciali...",
+    totalPrice: "Prezzo Totale",
+    proceedToPayment: "Procedi al Pagamento",
+    cancel: "Annulla",
+    
+    // Wedding
+    weddingServices: "Servizi per Matrimoni",
+    perfectVenueForYourSpecialDay: "La location perfetta per il tuo giorno speciale",
+    planYourWedding: "Pianifica il Tuo Matrimonio",
+    weddingGallery: "Galleria Matrimoni",
+    viewWeddingGallery: "Visualizza le nostre splendide location e celebrazioni",
+    weddingInquiry: "Richiesta Matrimonio",
+    weddingInquiryDesc: "Compila il modulo e ti ricontatteremo entro 24 ore",
+    meetingDate: "Data Incontro Preferita",
+    numberOfGuests: "Numero di Ospiti",
+    submitInquiry: "Invia Richiesta",
+    weddingConfirmed: "Grazie!",
+    weddingConfirmedDesc: "Abbiamo ricevuto la tua richiesta e ti contatteremo presto",
+    
+    // Contact
+    contactUs: "Contattaci",
+    phone: "Telefono",
+    address: "Indirizzo",
+    availableHours: "Orari Disponibili",
+    respondWithin: "Rispondiamo entro 24 ore",
+    
+    // Footer
+    back: "Indietro",
+    
+    // Dashboard
+    myBookings: "Le Mie Prenotazioni",
+    myInvoices: "Le Mie Fatture",
+    viewInvoices: "Visualizza Fatture",
+    
+    // Common
+    loading: "Caricamento...",
+    error: "Errore",
+    success: "Successo",
   },
 }
 
 export function getTranslation(language: Language, key: keyof typeof translations.en): string {
-  const translation = translations[language][key as keyof (typeof translations)[Language]]
-  return translation !== undefined ? translation : key
+  return translations[language][key] || translations.en[key]
 }
-
-
-
